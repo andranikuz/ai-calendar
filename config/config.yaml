@@ -1,0 +1,44 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+  idle_timeout: 120s
+  gin_mode: "debug"
+
+database:
+  host: "localhost"
+  port: 5432
+  database: "smart_calendar"
+  user: "postgres"
+  password: "postgres"
+  ssl_mode: "disable"
+  max_conns: 10
+  min_conns: 2
+  max_lifetime: 1h
+  max_idle_time: 30m
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  database: 0
+  max_retries: 3
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+
+jwt:
+  secret: "your-jwt-secret-key-change-in-production"
+  access_expiry: 15m
+  refresh_expiry: 168h # 7 days
+  issuer: "smart-goal-calendar"
+
+google:
+  client_id: ""
+  client_secret: ""
+  redirect_url: "http://localhost:8080/auth/google/callback"
+
+logging:
+  level: "info"
+  format: "json"

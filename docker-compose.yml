@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart-calendar-postgres
+    environment:
+      POSTGRES_DB: smart_calendar
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - smart-calendar-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: smart-calendar-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smart-calendar-network
+
+  # API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-calendar-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smart_calendar?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - GIN_MODE=debug
+      - JWT_SECRET=your-jwt-secret-key
+      - GOOGLE_CLIENT_ID=your-google-client-id
+      - GOOGLE_CLIENT_SECRET=your-google-client-secret
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - smart-calendar-network
+    volumes:
+      - ./config:/root/config
+    restart: unless-stopped
+
+  # PgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: smart-calendar-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@smartcalendar.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - smart-calendar-network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  smart-calendar-network:
+    driver: bridge
