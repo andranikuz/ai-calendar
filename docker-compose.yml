@@ -33,7 +33,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfileDev
     container_name: smart-calendar-api
     ports:
       - "8080:8080"
@@ -51,6 +51,7 @@ services:
       - smart-calendar-network
     volumes:
       - ./config:/root/config
+      - .:/app
     restart: unless-stopped
 
   # PgAdmin (Optional - for database management)

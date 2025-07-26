@@ -7,7 +7,7 @@ server:
   gin_mode: "debug"
 
 database:
-  host: "localhost"
+  host: "smart-calendar-postgres"
   port: 5432
   database: "smart_calendar"
   user: "postgres"
@@ -19,7 +19,7 @@ database:
   max_idle_time: 30m
 
 redis:
-  host: "localhost"
+  host: "smart-calendar-postgres"
   port: 6379
   password: ""
   database: 0

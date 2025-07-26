@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/auth"
 	"github.com/andranikuz/smart-goal-calendar/internal/domain/entities"
+	"github.com/gin-gonic/gin"
 )
 
 type AuthMiddleware struct {
@@ -32,7 +32,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Extract token from Bearer header
 		token, err := m.jwtService.ExtractTokenFromHeader(authHeader)
 		if err != nil {
@@ -43,7 +43,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Validate token
 		claims, err := m.jwtService.ValidateAccessToken(token)
 		if err != nil {
@@ -54,7 +54,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Check if token is expired
 		if m.jwtService.IsTokenExpired(claims) {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -64,13 +64,13 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Store user information in context
 		c.Set("user_id", claims.UserID)
 		c.Set("user_email", claims.Email)
 		c.Set("user_name", claims.Name)
 		c.Set("token_claims", claims)
-		
+
 		c.Next()
 	}
 }
@@ -83,26 +83,26 @@ func (m *AuthMiddleware) OptionalAuth() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		token, err := m.jwtService.ExtractTokenFromHeader(authHeader)
 		if err != nil {
 			c.Next()
 			return
 		}
-		
+
 		claims, err := m.jwtService.ValidateAccessToken(token)
 		if err != nil {
 			c.Next()
 			return
 		}
-		
+
 		if !m.jwtService.IsTokenExpired(claims) {
 			c.Set("user_id", claims.UserID)
 			c.Set("user_email", claims.Email)
 			c.Set("user_name", claims.Name)
 			c.Set("token_claims", claims)
 		}
-		
+
 		c.Next()
 	}
 }
@@ -113,7 +113,7 @@ func GetCurrentUserID(c *gin.Context) (entities.UserID, bool) {
 	if !exists {
 		return "", false
 	}
-	
+
 	id, ok := userID.(entities.UserID)
 	return id, ok
 }
@@ -124,7 +124,7 @@ func GetCurrentUserEmail(c *gin.Context) (string, bool) {
 	if !exists {
 		return "", false
 	}
-	
+
 	emailStr, ok := email.(string)
 	return emailStr, ok
 }
@@ -135,7 +135,7 @@ func GetCurrentUserName(c *gin.Context) (string, bool) {
 	if !exists {
 		return "", false
 	}
-	
+
 	nameStr, ok := name.(string)
 	return nameStr, ok
 }
@@ -146,7 +146,7 @@ func GetTokenClaims(c *gin.Context) (*auth.JWTClaims, bool) {
 	if !exists {
 		return nil, false
 	}
-	
+
 	jwtClaims, ok := claims.(*auth.JWTClaims)
 	return jwtClaims, ok
 }
@@ -164,7 +164,7 @@ func (m *AuthMiddleware) RequireUserOwnership(paramName string) gin.HandlerFunc 
 			c.Abort()
 			return
 		}
-		
+
 		// Get requested user ID from URL parameter
 		requestedUserID := entities.UserID(c.Param(paramName))
 		if requestedUserID == "" {
@@ -175,7 +175,7 @@ func (m *AuthMiddleware) RequireUserOwnership(paramName string) gin.HandlerFunc 
 			c.Abort()
 			return
 		}
-		
+
 		// Check if user is accessing their own resource
 		if currentUserID != requestedUserID {
 			c.JSON(http.StatusForbidden, gin.H{
@@ -185,7 +185,7 @@ func (m *AuthMiddleware) RequireUserOwnership(paramName string) gin.HandlerFunc 
 			c.Abort()
 			return
 		}
-		
+
 		c.Next()
 	}
 }
@@ -194,14 +194,14 @@ func (m *AuthMiddleware) RequireUserOwnership(paramName string) gin.HandlerFunc 
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// Allow specific origins in production
 		allowedOrigins := []string{
-			"http://localhost:3000",  // React dev server
-			"http://localhost:8080",  // API server
+			"http://localhost:5173",           // React dev server
+			"http://localhost:8080",           // API server
 			"https://smart-goal-calendar.com", // Production domain
 		}
-		
+
 		isAllowed := false
 		for _, allowedOrigin := range allowedOrigins {
 			if origin == allowedOrigin {
@@ -213,16 +213,16 @@ func CORS() gin.HandlerFunc {
 		if isAllowed {
 			c.Header("Access-Control-Allow-Origin", origin)
 		}
-		
+
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
-		
+
 		c.Next()
 	}
 }
@@ -240,13 +240,13 @@ func RateLimiter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Basic rate limiting implementation
 		// In production, use a proper rate limiter like go-redis/redis_rate
-		
+
 		// Skip rate limiting for health checks
 		if strings.HasPrefix(c.Request.URL.Path, "/health") {
 			c.Next()
 			return
 		}
-		
+
 		// TODO: Implement proper rate limiting logic
 		// For now, just pass through
 		c.Next()
@@ -262,7 +262,7 @@ func SecurityHeaders() gin.HandlerFunc {
 		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		c.Header("Content-Security-Policy", "default-src 'self'")
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
-		
+
 		c.Next()
 	}
 }
