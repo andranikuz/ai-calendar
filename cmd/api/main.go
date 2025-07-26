@@ -75,6 +75,8 @@ func main() {
 	milestoneRepo := postgres.NewMilestoneRepository(db.Pool)
 	eventRepo := postgres.NewEventRepository(db.Pool)
 	moodRepo := postgres.NewMoodRepository(db.Pool)
+	googleIntegrationRepo := postgres.NewGoogleIntegrationRepository(db.Pool)
+	googleCalendarSyncRepo := postgres.NewGoogleCalendarSyncRepository(db.Pool)
 	
 	// Initialize services
 	userService := services.NewUserService()
@@ -96,11 +98,32 @@ func main() {
 		cfg.JWT.Issuer,
 	)
 	
+	// Initialize Google services
+	oauth2Service := google.NewOAuth2Service(
+		cfg.Google.ClientID,
+		cfg.Google.ClientSecret,
+		cfg.Google.RedirectURL,
+	)
+	calendarService := google.NewCalendarService(oauth2Service)
+	
 	// Initialize HTTP handlers
 	userHTTPHandler := httpHandlers.NewUserHTTPHandler(userHandler, userService, jwtService)
 	goalHTTPHandler := httpHandlers.NewGoalHTTPHandler(goalHandler)
 	eventHTTPHandler := httpHandlers.NewEventHTTPHandler(eventHandler)
 	moodHTTPHandler := httpHandlers.NewMoodHTTPHandler(moodHandler)
+	googleAuthHandler := httpHandlers.NewGoogleAuthHandler(
+		oauth2Service,
+		calendarService,
+		googleIntegrationRepo,
+		googleCalendarSyncRepo,
+	)
+	googleCalendarSyncHandler := httpHandlers.NewGoogleCalendarSyncHandler(
+		oauth2Service,
+		calendarService,
+		googleIntegrationRepo,
+		googleCalendarSyncRepo,
+		eventRepo,
+	)
 	
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
@@ -142,6 +165,12 @@ func main() {
 		
 		// Setup mood routes
 		routes.SetupMoodRoutes(v1, moodHTTPHandler, authMiddleware)
+		
+		// Setup Google authentication routes
+		routes.SetupGoogleAuthRoutes(v1, googleAuthHandler, authMiddleware)
+		
+		// Setup Google calendar sync routes
+		routes.SetupGoogleCalendarSyncRoutes(v1, googleCalendarSyncHandler, authMiddleware)
 	}
 	
 	// Setup HTTP server

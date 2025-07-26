@@ -1,0 +1,75 @@
+/* Reset and global styles */
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Custom FullCalendar styles */
+.fc {
+  font-size: 14px;
+}
+
+.fc-event {
+  border-radius: 4px !important;
+  border: none !important;
+  padding: 2px 4px !important;
+}
+
+.fc-event-title {
+  font-weight: 500 !important;
+}
+
+.fc-daygrid-event {
+  margin: 1px 2px !important;
+}
+
+.fc-button {
+  background: #1677ff !important;
+  border-color: #1677ff !important;
+}
+
+.fc-button:hover {
+  background: #096dd9 !important;
+  border-color: #096dd9 !important;
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+  background: #0958d9 !important;
+  border-color: #0958d9 !important;
+}
+
+/* Dashboard styles */
+.dashboard-stat-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Loading styles */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

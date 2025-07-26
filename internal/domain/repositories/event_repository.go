@@ -19,6 +19,9 @@ type EventRepository interface {
 	// Get events for a user within a time range
 	GetByUserIDAndTimeRange(ctx context.Context, userID entities.UserID, start, end time.Time) ([]*entities.Event, error)
 	
+	// Alias for GetByUserIDAndTimeRange for consistency
+	GetByTimeRange(ctx context.Context, userID entities.UserID, start, end time.Time) ([]*entities.Event, error)
+	
 	// Get events for a specific goal
 	GetByGoalID(ctx context.Context, goalID entities.GoalID) ([]*entities.Event, error)
 	

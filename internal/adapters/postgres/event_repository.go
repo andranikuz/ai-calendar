@@ -133,6 +133,11 @@ func (r *eventRepository) GetByUserIDAndTimeRange(ctx context.Context, userID en
 	return events, nil
 }
 
+// GetByTimeRange is an alias for GetByUserIDAndTimeRange for consistency
+func (r *eventRepository) GetByTimeRange(ctx context.Context, userID entities.UserID, start, end time.Time) ([]*entities.Event, error) {
+	return r.GetByUserIDAndTimeRange(ctx, userID, start, end)
+}
+
 func (r *eventRepository) GetByGoalID(ctx context.Context, goalID entities.GoalID) ([]*entities.Event, error) {
 	query := `
 		SELECT id, user_id, goal_id, title, description, start_time, end_time,
