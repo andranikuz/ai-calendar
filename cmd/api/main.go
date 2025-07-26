@@ -17,6 +17,7 @@ import (
 	"github.com/andranikuz/smart-goal-calendar/config"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/auth"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/google"
+	"github.com/andranikuz/smart-goal-calendar/internal/adapters/migrations"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/postgres"
 	appHandlers "github.com/andranikuz/smart-goal-calendar/internal/application/handlers"
 	"github.com/andranikuz/smart-goal-calendar/internal/domain/services"

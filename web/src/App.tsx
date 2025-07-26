@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { ConfigProvider, App as AntApp } from 'antd';
@@ -7,18 +7,18 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser } from './store/slices/authSlice';
 import { authService } from './services/authService';
 
-// Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import CalendarPage from './pages/CalendarPage';
-import GoalsPage from './pages/GoalsPage';
-import MoodsPage from './pages/MoodsPage';
-import SettingsPage from './pages/SettingsPage';
-
-// Components
+// Critical components (loaded immediately)
 import Layout from './components/Layout/Layout';
 import LoadingSpinner from './components/Common/LoadingSpinner';
+
+// Lazy loaded pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+const GoalsPage = lazy(() => import('./pages/GoalsPage'));
+const MoodsPage = lazy(() => import('./pages/MoodsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 // Styles
 import './App.css';
@@ -41,27 +41,29 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
-      <Routes>
-        {!isAuthenticated ? (
-          // Unauthenticated routes
-          <>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </>
-        ) : (
-          // Authenticated routes
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/goals" element={<GoalsPage />} />
-            <Route path="/moods" element={<MoodsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-        )}
-      </Routes>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          {!isAuthenticated ? (
+            // Unauthenticated routes
+            <>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          ) : (
+            // Authenticated routes
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/goals" element={<GoalsPage />} />
+              <Route path="/moods" element={<MoodsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
+          )}
+        </Routes>
+      </Suspense>
     </Router>
   );
 };
