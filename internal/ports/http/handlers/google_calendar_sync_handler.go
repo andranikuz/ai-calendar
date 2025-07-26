@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -14,11 +15,11 @@ import (
 )
 
 type GoogleCalendarSyncHandler struct {
-	oauth2Service               *google.OAuth2Service
-	calendarService             *google.CalendarService
-	googleIntegrationRepo       repositories.GoogleIntegrationRepository
-	googleCalendarSyncRepo      repositories.GoogleCalendarSyncRepository
-	eventRepo                   repositories.EventRepository
+	oauth2Service          *google.OAuth2Service
+	calendarService        *google.CalendarService
+	googleIntegrationRepo  repositories.GoogleIntegrationRepository
+	googleCalendarSyncRepo repositories.GoogleCalendarSyncRepository
+	eventRepo              repositories.EventRepository
 }
 
 func NewGoogleCalendarSyncHandler(
@@ -38,24 +39,24 @@ func NewGoogleCalendarSyncHandler(
 }
 
 type CalendarSyncConfigRequest struct {
-	CalendarID         string                        `json:"calendar_id" binding:"required"`
-	CalendarName       string                        `json:"calendar_name" binding:"required"`
-	SyncDirection      entities.CalendarSyncDirection `json:"sync_direction" binding:"required"`
-	SyncStatus         entities.CalendarSyncStatus    `json:"sync_status"`
-	Settings           entities.CalendarSyncSettings  `json:"settings"`
+	CalendarID    string                         `json:"calendar_id" binding:"required"`
+	CalendarName  string                         `json:"calendar_name" binding:"required"`
+	SyncDirection entities.CalendarSyncDirection `json:"sync_direction" binding:"required"`
+	SyncStatus    entities.CalendarSyncStatus    `json:"sync_status"`
+	Settings      entities.CalendarSyncSettings  `json:"settings"`
 }
 
 type CalendarSyncConfigResponse struct {
-	ID                  string                        `json:"id"`
-	CalendarID          string                        `json:"calendar_id"`
-	CalendarName        string                        `json:"calendar_name"`
-	SyncDirection       entities.CalendarSyncDirection `json:"sync_direction"`
-	SyncStatus          entities.CalendarSyncStatus    `json:"sync_status"`
-	LastSyncAt          *time.Time                    `json:"last_sync_at"`
-	LastSyncError       string                        `json:"last_sync_error"`
-	Settings            entities.CalendarSyncSettings  `json:"settings"`
-	CreatedAt           time.Time                     `json:"created_at"`
-	UpdatedAt           time.Time                     `json:"updated_at"`
+	ID            string                         `json:"id"`
+	CalendarID    string                         `json:"calendar_id"`
+	CalendarName  string                         `json:"calendar_name"`
+	SyncDirection entities.CalendarSyncDirection `json:"sync_direction"`
+	SyncStatus    entities.CalendarSyncStatus    `json:"sync_status"`
+	LastSyncAt    *time.Time                     `json:"last_sync_at"`
+	LastSyncError string                         `json:"last_sync_error"`
+	Settings      entities.CalendarSyncSettings  `json:"settings"`
+	CreatedAt     time.Time                      `json:"created_at"`
+	UpdatedAt     time.Time                      `json:"updated_at"`
 }
 
 // CreateCalendarSync creates a new calendar sync configuration

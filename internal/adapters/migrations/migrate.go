@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -14,11 +14,11 @@ import (
 )
 
 type Migration struct {
-	ID          int
-	Name        string
-	SQL         string
-	AppliedAt   *time.Time
-	Checksum    string
+	ID        int
+	Name      string
+	SQL       string
+	AppliedAt *time.Time
+	Checksum  string
 }
 
 type Migrator struct {
@@ -44,12 +44,12 @@ func (m *Migrator) ensureMigrationsTable() error {
 		);
 		CREATE INDEX IF NOT EXISTS idx_schema_migrations_id ON schema_migrations(id);
 	`
-	
-	_, err := m.db.Exec(query)
+
+	_, err := m.db.Exec(context.Background(), query)
 	if err != nil {
 		return fmt.Errorf("failed to create migrations table: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -109,8 +109,8 @@ func (m *Migrator) GetAppliedMigrations() ([]Migration, error) {
 		FROM schema_migrations 
 		ORDER BY id
 	`
-	
-	rows, err := m.db.Query(query)
+
+	rows, err := m.db.Query(context.Background(), query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query applied migrations: %w", err)
 	}
@@ -120,12 +120,12 @@ func (m *Migrator) GetAppliedMigrations() ([]Migration, error) {
 	for rows.Next() {
 		var migration Migration
 		var appliedAt time.Time
-		
+
 		err := rows.Scan(&migration.ID, &migration.Name, &migration.Checksum, &appliedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan migration row: %w", err)
 		}
-		
+
 		migration.AppliedAt = &appliedAt
 		applied = append(applied, migration)
 	}
@@ -153,7 +153,7 @@ func (m *Migrator) Migrate() error {
 		if appliedMigration, exists := appliedMap[migration.ID]; exists {
 			// Check if migration content has changed
 			if appliedMigration.Checksum != migration.Checksum {
-				return fmt.Errorf("migration %d (%s) has been modified since it was applied", 
+				return fmt.Errorf("migration %d (%s) has been modified since it was applied",
 					migration.ID, migration.Name)
 			}
 			log.Printf("Migration %d (%s) already applied", migration.ID, migration.Name)
@@ -161,33 +161,34 @@ func (m *Migrator) Migrate() error {
 		}
 
 		log.Printf("Applying migration %d (%s)...", migration.ID, migration.Name)
-		
+
 		// Start transaction
-		tx, err := m.db.Begin()
+		tx, err := m.db.Begin(context.Background())
 		if err != nil {
 			return fmt.Errorf("failed to start transaction for migration %d: %w", migration.ID, err)
 		}
 
 		// Execute migration SQL
-		_, err = tx.Exec(migration.SQL)
+		_, err = tx.Exec(context.Background(), migration.SQL)
 		if err != nil {
-			tx.Rollback()
-			return fmt.Errorf("failed to execute migration %d (%s): %w", 
+			tx.Rollback(context.Background())
+			return fmt.Errorf("failed to execute migration %d (%s): %w",
 				migration.ID, migration.Name, err)
 		}
 
 		// Record migration as applied
 		_, err = tx.Exec(
+			context.Background(),
 			"INSERT INTO schema_migrations (id, name, checksum) VALUES ($1, $2, $3)",
 			migration.ID, migration.Name, migration.Checksum,
 		)
 		if err != nil {
-			tx.Rollback()
+			tx.Rollback(context.Background())
 			return fmt.Errorf("failed to record migration %d as applied: %w", migration.ID, err)
 		}
 
 		// Commit transaction
-		if err = tx.Commit(); err != nil {
+		if err = tx.Commit(context.Background()); err != nil {
 			return fmt.Errorf("failed to commit migration %d: %w", migration.ID, err)
 		}
 
@@ -215,14 +216,14 @@ func (m *Migrator) Status() error {
 
 	fmt.Println("Migration Status:")
 	fmt.Println("================")
-	
+
 	for _, migration := range m.migrations {
 		if appliedMigration, exists := appliedMap[migration.ID]; exists {
 			status := "APPLIED"
 			if appliedMigration.Checksum != migration.Checksum {
 				status = "MODIFIED"
 			}
-			fmt.Printf("✓ %d %-40s %s (%s)\n", 
+			fmt.Printf("✓ %d %-40s %s (%s)\n",
 				migration.ID, migration.Name, status, appliedMigration.AppliedAt.Format("2006-01-02 15:04:05"))
 		} else {
 			fmt.Printf("✗ %d %-40s PENDING\n", migration.ID, migration.Name)
@@ -239,9 +240,9 @@ func calculateChecksum(content []byte) string {
 	if length == 0 {
 		return "empty"
 	}
-	
+
 	first := content[0]
 	last := content[length-1]
-	
+
 	return fmt.Sprintf("%d-%d-%d", length, first, last)
 }
