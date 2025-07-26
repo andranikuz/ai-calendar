@@ -11,8 +11,6 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
-
-	"github.com/andranikuz/smart-goal-calendar/internal/domain/entities"
 )
 
 type OAuth2Service struct {
@@ -100,7 +98,7 @@ func (s *OAuth2Service) ValidateToken(ctx context.Context, accessToken string) e
 	}
 
 	client := s.config.Client(ctx, token)
-	
+
 	// Test the token by making a simple API call
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + accessToken)
 	if err != nil {
@@ -127,7 +125,7 @@ func (s *OAuth2Service) GetUserInfo(ctx context.Context, accessToken string) (*T
 	}
 
 	client := s.config.Client(ctx, token)
-	
+
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %w", err)
