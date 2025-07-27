@@ -225,10 +225,83 @@ When syncing between Google Calendar and Smart Goal Calendar:
 3. **User Consent**: Users must explicitly authorize access to their Google Calendar
 4. **Token Refresh**: Tokens are automatically refreshed before expiration
 
+## Real-time Webhook Integration
+
+### Overview
+
+Smart Goal Calendar now supports real-time synchronization through Google Calendar webhooks. This eliminates the need for periodic polling and provides instant updates when calendar events change.
+
+### Setting Up Webhooks
+
+#### 1. Configure Webhook Endpoint
+
+Ensure your application is accessible from the internet. Google needs to send POST requests to your webhook endpoint:
+
+```
+https://your-domain.com/api/v1/google/webhook
+```
+
+Update your configuration with the public webhook URL:
+
+```yaml
+google:
+  webhook_url: "https://your-domain.com/api/v1/google/webhook"
+```
+
+#### 2. Setup Webhook for a Calendar
+
+```bash
+curl -X POST http://localhost:8080/api/v1/google/webhook/setup \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "calendar_id": "primary"
+  }'
+```
+
+Response:
+```json
+{
+  "message": "Webhook setup successfully",
+  "channel_id": "unique-channel-id",
+  "webhook_url": "https://your-domain.com/api/v1/google/webhook"
+}
+```
+
+### Webhook Processing
+
+When Google Calendar events change, the webhook handler:
+
+1. Receives notification from Google
+2. Validates the webhook headers
+3. Performs incremental sync for changed events
+4. Updates local database with changes
+
+The webhook automatically handles:
+- New event creation
+- Event updates (time, title, attendees, etc.)
+- Event deletions
+- Recurring event changes
+
+### Webhook Management
+
+Webhooks are automatically tracked in the database with:
+- Channel ID for identification
+- Resource ID for Google's tracking
+- Expiration time (webhooks expire after ~1 week)
+- Last sync timestamp
+
+### Security
+
+- Webhooks validate Google's headers for authenticity
+- No authentication required on webhook endpoint (Google requirement)
+- Webhook setup/management endpoints require user authentication
+
 ## Future Enhancements
 
-- Real-time sync using Google Calendar webhooks
+- ✅ Real-time sync using Google Calendar webhooks (Completed)
 - Support for recurring events with complex patterns
 - Selective sync based on event categories or labels
 - Conflict resolution UI for manual intervention
 - Support for multiple Google accounts
+- Automatic webhook renewal before expiration

@@ -3,8 +3,8 @@
 ## Текущее состояние
 
 **Статус:** Инициализация проекта  
-**Дата:** 2025-07-26  
-**Версия:** 0.1.0 (MVP подготовка)
+**Дата:** 2025-07-27  
+**Версия:** 0.1.1 (MVP + Webhooks)
 
 ## Общая архитектура
 
@@ -24,8 +24,8 @@ Smart Goal Calendar использует **Clean Architecture** с четким 
 ┌─────────────────────────────────────────────────────────┐
 │                     Interface Layer                      │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────┐ │
-│  │   HTTP/REST     │  │    WebSocket    │  │   gRPC   │ │
-│  │   Endpoints     │  │   Real-time     │  │ Internal │ │
+│  │   HTTP/REST     │  │    Webhooks    │  │   gRPC   │ │
+│  │   Endpoints     │  │  (Google Cal)   │  │ Internal │ │
 │  └─────────────────┘  └─────────────────┘  └──────────┘ │
 └─────────────────────────────────────────────────────────┘
                                │
@@ -79,10 +79,12 @@ smart-goal-calendar/
 │   ├── adapters/            # Адаптеры
 │   │   ├── postgres/        # PostgreSQL реализация
 │   │   ├── redis/           # Redis кеширование
-│   │   ├── google/          # Google APIs
+│   │   ├── google/          # Google APIs + Webhooks
 │   │   └── temporal/        # Temporal workflows
 │   └── ports/               # Внешние интерфейсы
 │       ├── http/            # HTTP handlers
+│       │   ├── handlers/    # Including webhook handlers
+│       │   └── routes/      # Including webhook routes
 │       ├── grpc/            # gRPC сервисы
 │       └── websocket/       # WebSocket handlers
 ├── web/                     # Frontend приложение
@@ -137,20 +139,42 @@ type Goal struct {
 #### Event
 ```go
 type Event struct {
-    ID          EventID
-    UserID      UserID
-    GoalID      *GoalID // Optional связь с целью
-    Title       string
-    Description string
-    StartTime   time.Time
-    EndTime     time.Time
-    Timezone    Timezone
-    Recurrence  *RecurrenceRule
-    Location    *Location
-    Attendees   []Attendee
-    Status      EventStatus
-    CreatedAt   time.Time
-    UpdatedAt   time.Time
+    ID            EventID
+    UserID        UserID
+    GoalID        *GoalID // Optional связь с целью
+    Title         string
+    Description   string
+    StartTime     time.Time
+    EndTime       time.Time
+    Timezone      Timezone
+    Recurrence    *RecurrenceRule
+    Location      *Location
+    Attendees     []Attendee
+    Status        EventStatus
+    GoogleEventID *string // Google Calendar Event ID для webhook sync
+    CreatedAt     time.Time
+    UpdatedAt     time.Time
+}
+```
+
+#### GoogleCalendarSync
+```go
+type GoogleCalendarSync struct {
+    ID                  string
+    UserID              UserID
+    GoogleIntegrationID GoogleIntegrationID
+    CalendarID          string
+    CalendarName        string
+    SyncDirection       CalendarSyncDirection
+    SyncStatus          CalendarSyncStatus
+    LastSyncAt          time.Time
+    WebhookChannelID    string     // Webhook канал для real-time
+    WebhookURL          string     // URL для webhook endpoint
+    WebhookResourceID   string     // Resource ID от Google
+    WebhookExpiresAt    *time.Time // Время истечения webhook
+    Settings            CalendarSyncSettings
+    CreatedAt           time.Time
+    UpdatedAt           time.Time
 }
 ```
 
@@ -228,6 +252,7 @@ type RecurrenceRule struct {
 
 ### Текущие (MVP)
 - **Google Calendar API:** OAuth2, двусторонняя синхронизация
+- **Google Calendar Webhooks:** Real-time push уведомления об изменениях
 - **Google OAuth:** Аутентификация пользователей
 
 ### Планируемые (Post-MVP)
@@ -235,6 +260,48 @@ type RecurrenceRule struct {
 - **Notion API:** Database sync
 - **CalDAV:** iCloud, Nextcloud
 - **Task Management:** Todoist, Asana, Trello
+
+## Webhook Architecture
+
+### Google Calendar Webhooks
+
+Система использует Google Calendar Push Notifications для получения real-time обновлений:
+
+```
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│  Google Calendar│──────>│ Webhook Handler │──────>│   Event Sync    │
+│   Push Service  │ POST  │ /api/v1/google/ │      │   Processor     │
+│                 │       │    /webhook     │      │                 │
+└─────────────────┘      └─────────────────┘      └─────────────────┘
+                                  │                         │
+                                  ▼                         ▼
+                         ┌─────────────────┐      ┌─────────────────┐
+                         │ Channel Manager │      │  Event Storage  │
+                         │  (PostgreSQL)   │      │  (PostgreSQL)   │
+                         └─────────────────┘      └─────────────────┘
+```
+
+### Webhook Flow
+
+1. **Setup Phase:**
+   - User authorizes calendar access
+   - Application registers webhook with Google
+   - Channel ID and resource ID stored in database
+
+2. **Notification Phase:**
+   - Google sends POST request on calendar changes
+   - Handler validates webhook headers
+   - Asynchronous processing of notification
+
+3. **Sync Phase:**
+   - Incremental sync fetches only changed events
+   - Updates local database with changes
+   - Handles creates, updates, and deletes
+
+4. **Management:**
+   - Webhooks expire after ~1 week
+   - Automatic renewal before expiration (planned)
+   - Channel cleanup on user disconnect
 
 ## Безопасность
 
@@ -288,11 +355,15 @@ type RecurrenceRule struct {
 - [x] Документация проекта
 - [x] План архитектуры
 - [x] Техническое задание
+- [x] Инициализация Go проекта
+- [x] Структура каталогов
+- [x] Docker setup
+- [x] Google Calendar OAuth2 интеграция
+- [x] Google Calendar Webhook интеграция
 
 ### 🔄 В процессе
-- [x] ~~Инициализация Go проекта~~
-- [x] ~~Структура каталогов~~
-- [x] ~~Docker setup~~
+- [ ] Базовые тесты репозиториев
+- [ ] Автоматическое продление webhook подписок
 
 ### 📋 Запланировано
 - [ ] Базовые тесты репозиториев
