@@ -1,7 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { ConfigProvider, App as AntApp } from 'antd';
+import { ConfigProvider, App as AntApp } from './utils/antd';
 import { store } from './store';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser } from './store/slices/authSlice';

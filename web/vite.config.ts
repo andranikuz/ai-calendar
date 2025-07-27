@@ -1,9 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import vitePluginImp from 'vite-plugin-imp'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    vitePluginImp({
+      libList: [
+        {
+          libName: 'antd',
+          style: () => false, // We'll import styles manually where needed
+        },
+      ],
+    }),
+  ],
   build: {
     rollupOptions: {
       output: {
@@ -17,8 +28,7 @@ export default defineConfig({
           // State management
           redux: ['@reduxjs/toolkit', 'react-redux'],
           
-          // UI libraries - separate chunks for better caching
-          antd: ['antd'],
+          // UI libraries
           mui: ['@mui/material', '@mui/icons-material'],
           
           // Calendar library

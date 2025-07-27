@@ -12,7 +12,7 @@ import {
   Typography,
   Divider,
   Alert
-} from 'antd';
+} from '../../utils/antd';
 import { 
   FlagOutlined, 
   CalendarOutlined, 

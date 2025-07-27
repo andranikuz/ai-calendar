@@ -12,7 +12,7 @@ import {
   Tooltip,
   Drawer,
   Grid,
-} from 'antd';
+} from '../../utils/antd';
 import {
   DashboardOutlined,
   CalendarOutlined,

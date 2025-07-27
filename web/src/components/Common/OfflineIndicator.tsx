@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Tooltip, Button, Space } from 'antd';
+import { Badge, Tooltip, Button, Space } from '../../utils/antd';
 import { WifiOutlined, SyncOutlined, CloudSyncOutlined } from '@ant-design/icons';
 import { useOffline } from '../../hooks/useOffline';
 

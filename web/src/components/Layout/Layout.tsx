@@ -10,7 +10,7 @@ import {
   Space,
   Badge,
   Tooltip,
-} from 'antd';
+} from '../../utils/antd';
 import {
   DashboardOutlined,
   CalendarOutlined,

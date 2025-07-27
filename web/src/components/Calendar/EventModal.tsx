@@ -11,7 +11,7 @@ import {
   Popconfirm,
   Divider,
   Typography
-} from 'antd';
+} from '../../utils/antd';
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createEvent, updateEvent, deleteEvent } from '../../store/slices/eventsSlice';

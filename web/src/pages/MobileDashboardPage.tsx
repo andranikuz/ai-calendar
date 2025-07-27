@@ -9,7 +9,7 @@ import {
   List, 
   Grid,
   Empty 
-} from 'antd';
+} from '../utils/antd';
 import { 
   CalendarOutlined, 
   FlagOutlined, 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
-import { notification } from 'antd';
+import { notification } from '../../utils/antd';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,

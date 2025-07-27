@@ -17,7 +17,7 @@ import {
   Tooltip,
   Row,
   Col
-} from 'antd';
+} from '../../utils/antd';
 import { 
   FlagOutlined, 
   CalendarOutlined, 

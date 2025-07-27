@@ -12,7 +12,7 @@ import {
   Button,
   Typography,
   Alert
-} from 'antd';
+} from '../../utils/antd';
 import { Recurrence } from '../../types/api';
 import dayjs from 'dayjs';
 

@@ -18,7 +18,7 @@ import {
   Col,
   Badge,
   message
-} from 'antd';
+} from '../../utils/antd';
 import {
   ClockCircleOutlined,
   CalendarOutlined,

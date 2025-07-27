@@ -14,7 +14,7 @@ import {
   Tag,
   Dropdown,
   Card
-} from 'antd';
+} from '../../utils/antd';
 import {
   PlusOutlined,
   EditOutlined,

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Button, Space, Select, Tooltip, Modal, message } from 'antd';
+import { Card, Button, Space, Select, Tooltip, Modal, message } from '../utils/antd';
 import { 
   LeftOutlined, 
   RightOutlined, 

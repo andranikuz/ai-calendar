@@ -1,5 +1,5 @@
 import React from 'react';
-import { Spin } from 'antd';
+import { Spin } from '../../utils/antd';
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'default' | 'large';

@@ -18,7 +18,7 @@ import {
   message,
   Popconfirm,
   Empty
-} from 'antd';
+} from '../../utils/antd';
 import {
   CloseOutlined,
   EditOutlined,

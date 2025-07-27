@@ -15,7 +15,7 @@ import {
   Select,
   Empty,
   Statistic
-} from 'antd';
+} from '../utils/antd';
 import {
   PlusOutlined,
   FlagOutlined,

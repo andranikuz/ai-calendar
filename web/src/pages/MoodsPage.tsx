@@ -19,7 +19,7 @@ import {
   Divider,
   Tooltip,
   message
-} from 'antd';
+} from '../utils/antd';
 import {
   SmileOutlined,
   PlusOutlined,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Typography, Card, Space, Divider, Alert } from 'antd';
+import { Form, Input, Button, Typography, Card, Space, Divider, Alert } from '../utils/antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';

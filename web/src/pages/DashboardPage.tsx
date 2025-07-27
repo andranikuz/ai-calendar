@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Row, Col, Card, Typography, Space, Button, Progress, List, Badge } from 'antd';
+import { Row, Col, Card, Typography, Space, Button, Progress, List, Badge } from '../utils/antd';
 import { 
   CalendarOutlined, 
   FlagOutlined, 

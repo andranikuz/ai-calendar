@@ -19,7 +19,7 @@ import {
   message,
   Avatar,
   Popconfirm
-} from 'antd';
+} from '../utils/antd';
 import {
   GoogleOutlined,
   UserOutlined,
