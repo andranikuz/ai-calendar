@@ -1,0 +1,116 @@
+{
+  "project": {
+    "name": "Smart Goal Calendar",
+    "description": "Инновационная система управления целями с интеграцией календаря и mood tracking",
+    "version": "0.1.1",
+    "architecture": "Clean Architecture (Go) + React/TypeScript"
+  },
+  "settings": {
+    "language": "ru",
+    "commandLanguage": "en",
+    "outputFormat": "markdown",
+    "timezone": "Europe/Moscow"
+  },
+  "paths": {
+    "docs": "docs/",
+    "backend": "internal/",
+    "frontend": "web/src/",
+    "tests": {
+      "backend": "internal/",
+      "frontend": "web/src/"
+    },
+    "config": "config/",
+    "migrations": "migrations/"
+  },
+  "commands": {
+    "aliases": {
+      "s": "status",
+      "d": "develop", 
+      "r": "reflect",
+      "p": "plan",
+      "i": "init",
+      "t": "test",
+      "l": "lint",
+      "b": "build",
+      "qf": "quick-fix",
+      "fc": "full-check"
+    },
+    "shortcuts": {
+      "my-flow": "status + develop + test",
+      "release-check": "lint + test + audit + docs-sync",
+      "go-check": "test + lint + build",
+      "react-check": "cd web && npm run lint && npm run typecheck && npm run build"
+    }
+  },
+  "technical": {
+    "backend": {
+      "language": "Go",
+      "version": "1.21+",
+      "framework": "Gin",
+      "database": "PostgreSQL",
+      "testing": ["testify", "sqlmock"],
+      "commands": {
+        "test": "go test ./...",
+        "vet": "go vet ./...",
+        "build": "go build ./cmd/api",
+        "lint": "golangci-lint run"
+      }
+    },
+    "frontend": {
+      "language": "TypeScript",
+      "framework": "React 18",
+      "state": "Redux Toolkit",
+      "ui": ["Ant Design", "Material-UI"],
+      "bundler": "Vite",
+      "commands": {
+        "dev": "cd web && npm run dev",
+        "build": "cd web && npm run build",
+        "test": "cd web && npm run test",
+        "lint": "cd web && npm run lint",
+        "typecheck": "cd web && npm run typecheck"
+      }
+    }
+  },
+  "integrations": {
+    "google": {
+      "calendar": true,
+      "oauth2": true,
+      "webhooks": true
+    },
+    "pwa": {
+      "enabled": true,
+      "offline": true,
+      "serviceWorker": true
+    }
+  },
+  "quality": {
+    "targets": {
+      "testCoverage": {
+        "backend": "80%",
+        "frontend": "70%"
+      },
+      "typescript": "strict",
+      "bundleSize": "1MB",
+      "performance": "Lighthouse >90",
+      "accessibility": "WCAG 2.1 AA"
+    }
+  },
+  "workflows": {
+    "defaultCommands": ["init", "status", "develop", "reflect", "plan"],
+    "qualityChecks": ["test", "lint", "audit", "typecheck"],
+    "deployment": ["build", "test", "docs-sync"],
+    "bugWorkflow": ["bug", "bug-list", "bug-fix"]
+  },
+  "documentation": {
+    "required": [
+      "docs/current-status.md",
+      "docs/development-plan.md", 
+      "docs/architecture.md",
+      "docs/project.md",
+      "docs/README.md",
+      "CHANGELOG.md"
+    ],
+    "autoUpdate": true,
+    "format": "markdown"
+  }
+}

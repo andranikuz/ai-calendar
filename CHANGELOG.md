@@ -1,5 +1,56 @@
 # Changelog - Smart Goal Calendar
 
+## [27.07.2025] - Выполнение команды "мигрируй подход к командам"
+
+### Выполненные действия:
+- Создана новая система команд v2.0 с английскими названиями и алиасами
+- Создан полный набор .ai/ файлов для структурированного управления проектом:
+  - `.ai/commands.md` - полный справочник команд с алгоритмами выполнения
+  - `.ai/technical.md` - технические стандарты под Go/React архитектуру
+  - `.ai/workflows.md` - детальные workflow процессы с mermaid диаграммами
+  - `.ai/rules.md` - критические правила и стандарты качества
+  - `.ai/shortcuts.md` - система алиасов и быстрых команд
+  - `.ai/templates.md` - шаблоны для всех типов документов
+- Настроен `.ai-config.json` с конфигурацией специфичной для Smart Goal Calendar
+- Обновлен `instructions.md` как новый entry point системы
+- Добавлено migration notice в CLAUDE.md с таблицей соответствия команд
+
+### Изменения в системе:
+- **Новая командная архитектура**: Английские команды с русским выводом
+- **Система алиасов**: s/d/r/p/i для основных команд, qf/fc для композитных
+- **Специализированные команды**: calendar-sync, pwa-check, goals-test, mood-analytics
+- **Bug management система**: bug, bug-list, bug-fix с интерактивными workflow
+- **Structured templates**: Готовые шаблоны для status, reflect, plan, bug reports
+- **Technical standards**: Детальные стандарты для Go Clean Architecture и React/TypeScript
+- **Quality gates**: Обязательные проверки перед коммитом (tests, lint, build)
+
+### Новые возможности:
+- Композитные команды: `quick-fix` = status → develop → test → commit
+- Batch operations: `full-check` = lint + test + audit + docs-sync  
+- Shortcuts для React/Go: react-check, go-check с полной валидацией
+- Conditional workflows с автоматическим выбором следующего действия
+- Project-specific команды для Google Calendar, PWA, SMART Goals
+- Comprehensive templates для всех типов документации и отчетов
+
+### Backward compatibility:
+- Старые русские команды продолжают работать
+- CLAUDE.md сохранен с migration notice
+- Все существующие процессы остались без изменений
+- Добавлена таблица соответствия старых и новых команд
+
+### Структура новой системы:
+```
+.ai/
+├── commands.md          # Полный справочник команд
+├── workflows.md         # Детальные процессы
+├── technical.md         # Технические стандарты
+├── rules.md            # Критические правила
+├── shortcuts.md        # Алиасы и быстрые команды
+└── templates.md        # Шаблоны документов
+.ai-config.json         # Конфигурация проекта
+instructions.md         # Новый entry point
+```
+
 ## [27.07.2025] - Выполнение команды "migrate-docs"
 
 ### Выполненные действия:
