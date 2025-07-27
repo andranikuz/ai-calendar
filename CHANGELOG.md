@@ -167,6 +167,46 @@
 ## [27.07.2025] - Выполнение команды "продолжи разработку"
 
 ### Выполненные действия:
+- Реализована **улучшенная система SMART целей** с полной валидацией
+- Создан компонент `SMARTGoalModal` с real-time SMART scoring (0-100%)
+- Разработан `smartGoals.ts` утилитарный модуль для SMART критериев валидации
+- Реализована **система подзадач** с древовидной структурой
+- Создан `TaskTreeView` компонент для иерархического управления задачами
+- Добавлена поддержка многоуровневых подзадач (parent_task_id, order_index)
+- Улучшен `GoalDetailPanel` с интеграцией TaskTreeView
+- Обновлены типы API для поддержки подзадач и subtree structure
+
+### Изменения в системе:
+- **SMART Validation**: Автоматическая проверка Specific, Measurable, Achievable, Relevant, Time-bound критериев
+- **Real-time Scoring**: Live scoring 0-100% с цветовыми индикаторами и suggestions
+- **Interactive Examples**: Category-specific SMART goal templates с "Use as Template" function
+- **Hierarchical Tasks**: Tree view с drag-and-drop, progress tracking, nested subtasks
+- **Visual Progress**: Automatic progress calculation based on subtask completion
+- **Advanced UI**: Progress bars, status icons, priority colors, deadline indicators
+- **Smart UX**: Context menus, bulk operations, keyboard shortcuts
+
+### Результаты:
+✅ SMART validation с 5 критериями и detailed feedback  
+✅ Real-time scoring system с suggestions и warnings  
+✅ Category-specific goal templates (Health, Career, Education, etc.)  
+✅ Hierarchical task system с unlimited nesting levels  
+✅ Visual progress tracking для tasks и subtasks  
+✅ Production-ready сборка без критических ошибок  
+
+### Технические детали:
+- Созданы компоненты: `SMARTGoalModal.tsx`, `TaskTreeView.tsx`
+- Созданы утилиты: `smartGoals.ts` (SMART validation engine)
+- Обновлены файлы: `GoalDetailPanel.tsx`, `GoalsPage.tsx`, `api.ts` (types)
+- Features: Real-time validation, hierarchical tasks, progress auto-calculation
+- UX improvements: Interactive templates, context menus, visual indicators
+
+---
+
+**Статус проекта:** Улучшенная система целей завершена. SMART validation, hierarchical tasks, real-time progress tracking.
+
+## [27.07.2025] - Выполнение команды "продолжи разработку"
+
+### Выполненные действия:
 - Создан CLI `cmd/migrate` для применения миграций
 - Обновлена документация (README, architecture, development-plan, current-status)
 - Добавлен файл `docs/current-status.md`
