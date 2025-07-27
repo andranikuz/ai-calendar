@@ -29,8 +29,9 @@ export const getAuthUrl = createAsyncThunk(
     try {
       const response = await googleService.getAuthUrl();
       return response.auth_url;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get auth URL');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get auth URL';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -41,8 +42,9 @@ export const handleCallback = createAsyncThunk(
     try {
       const integration = await googleService.handleCallback(code, state);
       return integration;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to connect Google account');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect Google account';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -53,8 +55,9 @@ export const getIntegration = createAsyncThunk(
     try {
       const integration = await googleService.getIntegration();
       return integration;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get integration');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get integration';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -65,8 +68,9 @@ export const disconnect = createAsyncThunk(
     try {
       await googleService.disconnect();
       return null;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to disconnect');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to disconnect';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -77,8 +81,9 @@ export const getCalendars = createAsyncThunk(
     try {
       const response = await googleService.getCalendars();
       return response.calendars;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get calendars');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get calendars';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -89,8 +94,9 @@ export const getCalendarSyncs = createAsyncThunk(
     try {
       const response = await googleService.getCalendarSyncs();
       return response.syncs;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get calendar syncs');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get calendar syncs';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -101,8 +107,9 @@ export const createCalendarSync = createAsyncThunk(
     try {
       const sync = await googleService.createCalendarSync(syncData);
       return sync;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to create calendar sync');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create calendar sync';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -113,8 +120,9 @@ export const updateCalendarSync = createAsyncThunk(
     try {
       const sync = await googleService.updateCalendarSync(id, data);
       return sync;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update calendar sync');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update calendar sync';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -125,8 +133,9 @@ export const deleteCalendarSync = createAsyncThunk(
     try {
       await googleService.deleteCalendarSync(syncId);
       return syncId;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to delete calendar sync');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete calendar sync';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -137,8 +146,9 @@ export const triggerSync = createAsyncThunk(
     try {
       const result = await googleService.triggerSync(syncId);
       return { syncId, result };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to trigger sync');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to trigger sync';
+      return rejectWithValue(errorMessage);
     }
   }
 );

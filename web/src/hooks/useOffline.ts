@@ -5,7 +5,7 @@ export interface OfflineAction {
   id: number;
   type: 'create' | 'update' | 'delete';
   store: string;
-  data: any;
+  data: Record<string, unknown>;
   url: string;
   method: string;
   created_at: string;
@@ -18,9 +18,9 @@ export interface OfflineHookReturn {
   pendingActions: OfflineAction[];
   syncStatus: 'idle' | 'syncing' | 'error';
   offlineData: {
-    goals: any[];
-    events: any[];
-    moods: any[];
+    goals: Array<Record<string, unknown>>;
+    events: Array<Record<string, unknown>>;
+    moods: Array<Record<string, unknown>>;
   };
   addOfflineAction: (action: Omit<OfflineAction, 'id' | 'created_at' | 'retry_count'>) => Promise<void>;
   syncPendingActions: () => Promise<void>;
@@ -33,9 +33,9 @@ export const useOffline = (): OfflineHookReturn => {
   const [pendingActions, setPendingActions] = useState<OfflineAction[]>([]);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
   const [offlineData, setOfflineData] = useState({
-    goals: [] as any[],
-    events: [] as any[],
-    moods: [] as any[]
+    goals: [] as Array<Record<string, unknown>>,
+    events: [] as Array<Record<string, unknown>>,
+    moods: [] as Array<Record<string, unknown>>
   });
 
   // Track online/offline status
@@ -83,7 +83,7 @@ export const useOffline = (): OfflineHookReturn => {
   const loadPendingActions = async () => {
     try {
       const actions = await indexedDBManager.getPendingActions();
-      setPendingActions(actions);
+      setPendingActions(actions as unknown as OfflineAction[]);
     } catch (error) {
       console.error('Failed to load pending actions:', error);
     }
@@ -96,9 +96,9 @@ export const useOffline = (): OfflineHookReturn => {
       const moods = await indexedDBManager.getAll('moods');
 
       setOfflineData({
-        goals: goals || [],
-        events: events || [],
-        moods: moods || []
+        goals: (goals as unknown as Array<Record<string, unknown>>) || [],
+        events: (events as unknown as Array<Record<string, unknown>>) || [],
+        moods: (moods as unknown as Array<Record<string, unknown>>) || []
       });
     } catch (error) {
       console.error('Failed to refresh offline data:', error);
@@ -145,44 +145,44 @@ export const useOffline = (): OfflineHookReturn => {
       
       for (const action of actions) {
         try {
-          const response = await fetch(action.url, {
-            method: action.method,
+          const response = await fetch(action.url as string, {
+            method: action.method as string,
             headers: {
               'Content-Type': 'application/json',
-              ...action.headers
+              ...(action as any).headers
             },
-            body: action.body
+            body: (action as any).body
           });
 
           if (response.ok) {
             // Remove successful action
-            await indexedDBManager.removePendingAction(action.id);
+            await indexedDBManager.removePendingAction(action.id as number);
             
             // Update offline data if it was a successful operation
             if (action.type === 'create' || action.type === 'update') {
               const responseData = await response.json();
-              await updateOfflineData(action.store, responseData);
+              await updateOfflineData(action.store as string, responseData);
             } else if (action.type === 'delete') {
-              await removeFromOfflineData(action.store, action.data.id);
+              await removeFromOfflineData(action.store as string, (action.data as any).id);
             }
           } else {
             // Increment retry count for failed actions
-            action.retry_count += 1;
-            if (action.retry_count < 3) {
+            (action as any).retry_count += 1;
+            if ((action as any).retry_count < 3) {
               await indexedDBManager.put('pendingActions', action);
             } else {
               // Remove after 3 failed attempts
-              await indexedDBManager.removePendingAction(action.id);
+              await indexedDBManager.removePendingAction(action.id as number);
             }
           }
         } catch (error) {
           console.error('Failed to sync action:', action, error);
           // Increment retry count
-          action.retry_count += 1;
-          if (action.retry_count < 3) {
+          (action as any).retry_count += 1;
+          if ((action as any).retry_count < 3) {
             await indexedDBManager.put('pendingActions', action);
           } else {
-            await indexedDBManager.removePendingAction(action.id);
+            await indexedDBManager.removePendingAction(action.id as number);
           }
         }
       }
@@ -199,7 +199,7 @@ export const useOffline = (): OfflineHookReturn => {
     }
   };
 
-  const updateOfflineData = async (store: string, data: any) => {
+  const updateOfflineData = async (store: string, data: Record<string, unknown>) => {
     try {
       await indexedDBManager.put(store, {
         ...data,

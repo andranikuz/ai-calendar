@@ -34,8 +34,9 @@ export const fetchMoods = createAsyncThunk(
     try {
       const response = await moodsService.getMoods(params);
       return response.moods;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch moods');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch moods';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -46,8 +47,9 @@ export const getTodayMood = createAsyncThunk(
     try {
       const mood = await moodsService.getTodayMood();
       return mood;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get today mood');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get today mood';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -58,8 +60,9 @@ export const createMood = createAsyncThunk(
     try {
       const mood = await moodsService.createMood(moodData);
       return mood;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to create mood');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create mood';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -70,8 +73,9 @@ export const updateMood = createAsyncThunk(
     try {
       const mood = await moodsService.updateMood(id, data);
       return mood;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update mood');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update mood';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -82,8 +86,9 @@ export const getMoodStats = createAsyncThunk(
     try {
       const stats = await moodsService.getMoodStats(params);
       return stats;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get mood stats');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get mood stats';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -94,8 +99,9 @@ export const getMoodsByDateRange = createAsyncThunk(
     try {
       const response = await moodsService.getMoodsByDateRange(params.startDate, params.endDate);
       return response.moods;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get moods by date range');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get moods by date range';
+      return rejectWithValue(errorMessage);
     }
   }
 );

@@ -35,8 +35,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  profile: Record<string, any>;
-  settings: Record<string, any>;
+  profile: Record<string, unknown>;
+  settings: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -118,7 +118,11 @@ export interface Event {
   timezone: string;
   recurrence?: Recurrence;
   location?: string;
-  attendees: any[];
+  attendees: Array<{
+    email: string;
+    name?: string;
+    response_status?: 'accepted' | 'declined' | 'tentative' | 'needsAction';
+  }>;
   status: 'tentative' | 'confirmed' | 'cancelled';
   external_id?: string;
   external_source?: string;

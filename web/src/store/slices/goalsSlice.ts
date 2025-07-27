@@ -27,8 +27,9 @@ export const fetchGoals = createAsyncThunk(
     try {
       const response = await goalsService.getGoals();
       return response.goals;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch goals');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch goals';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -39,8 +40,9 @@ export const createGoal = createAsyncThunk(
     try {
       const goal = await goalsService.createGoal(goalData);
       return goal;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to create goal');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create goal';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -51,8 +53,9 @@ export const updateGoal = createAsyncThunk(
     try {
       const goal = await goalsService.updateGoal(id, data);
       return goal;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update goal');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update goal';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -63,8 +66,9 @@ export const deleteGoal = createAsyncThunk(
     try {
       await goalsService.deleteGoal(id);
       return id;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to delete goal');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete goal';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -75,8 +79,9 @@ export const fetchGoalTasks = createAsyncThunk(
     try {
       const response = await goalsService.getGoalTasks(goalId);
       return response.tasks;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch tasks');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tasks';
+      return rejectWithValue(errorMessage);
     }
   }
 );

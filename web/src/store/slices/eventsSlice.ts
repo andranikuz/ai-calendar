@@ -28,8 +28,9 @@ export const fetchEvents = createAsyncThunk(
     try {
       const response = await eventsService.getEvents(params);
       return response.events;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to fetch events');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -40,8 +41,9 @@ export const createEvent = createAsyncThunk(
     try {
       const event = await eventsService.createEvent(eventData);
       return event;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to create event');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create event';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -52,8 +54,9 @@ export const updateEvent = createAsyncThunk(
     try {
       const event = await eventsService.updateEvent(id, data);
       return event;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update event');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update event';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -64,8 +67,9 @@ export const deleteEvent = createAsyncThunk(
     try {
       await eventsService.deleteEvent(id);
       return id;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to delete event');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete event';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -76,8 +80,9 @@ export const moveEvent = createAsyncThunk(
     try {
       const event = await eventsService.moveEvent(id, start, end);
       return event;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to move event');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to move event';
+      return rejectWithValue(errorMessage);
     }
   }
 );

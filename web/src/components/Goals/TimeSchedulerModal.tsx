@@ -151,7 +151,7 @@ const TimeSchedulerModal: React.FC<TimeSchedulerModalProps> = ({
     }
   };
 
-  const formatTimeSlot = (slot: any) => {
+  const formatTimeSlot = (slot: { start: { format: (format: string) => string }; end: { format: (format: string) => string }; duration: number }) => {
     return `${slot.start.format('MMM DD, HH:mm')} - ${slot.end.format('HH:mm')} (${slot.duration}min)`;
   };
 

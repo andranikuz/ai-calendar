@@ -25,8 +25,9 @@ export const login = createAsyncThunk(
     try {
       const response = await authService.login(credentials);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Login failed');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -37,8 +38,9 @@ export const register = createAsyncThunk(
     try {
       const response = await authService.register(userData);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Registration failed');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -49,8 +51,9 @@ export const getCurrentUser = createAsyncThunk(
     try {
       const user = await authService.getCurrentUser();
       return user;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to get user');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get user';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -61,8 +64,9 @@ export const updateUser = createAsyncThunk(
     try {
       const user = await authService.updateUser(userData);
       return user;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.error || 'Failed to update user');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update user';
+      return rejectWithValue(errorMessage);
     }
   }
 );

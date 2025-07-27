@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 export function recurrenceToRRule(recurrence: Recurrence, startDate: Date): RRule {
   const freq = getFrequency(recurrence.freq);
   
-  const options: any = {
+  const options: Record<string, unknown> = {
     freq,
     dtstart: startDate,
     interval: recurrence.interval || 1,

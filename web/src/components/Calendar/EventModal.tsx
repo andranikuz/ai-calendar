@@ -142,7 +142,7 @@ const EventModal: React.FC<EventModalProps> = ({
     }
   };
 
-  const validateTimeRange = (_rule: any, value: any) => {
+  const validateTimeRange = (_rule: unknown, value: unknown) => {
     if (!value || !Array.isArray(value) || value.length !== 2) {
       return Promise.reject('Please select start and end time');
     }

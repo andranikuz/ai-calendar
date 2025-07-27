@@ -222,7 +222,7 @@ export class IndexedDBManager {
   async addPendingAction(action: {
     type: 'create' | 'update' | 'delete';
     store: string;
-    data: any;
+    data: Record<string, unknown>;
     url: string;
     method: string;
   }): Promise<void> {
@@ -233,7 +233,7 @@ export class IndexedDBManager {
     });
   }
 
-  async getPendingActions(): Promise<any[]> {
+  async getPendingActions(): Promise<Array<Record<string, unknown>>> {
     return this.getAll('pendingActions');
   }
 

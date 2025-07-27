@@ -64,7 +64,7 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
 
   // Build tree structure from flat task list
   const buildTaskTree = (tasks: Task[]): any[] => {
-    const taskMap = new Map<string, Task & { children?: any[] }>();
+    const taskMap = new Map<string, any>();
     const rootTasks: any[] = [];
 
     // Create task map

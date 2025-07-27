@@ -27,7 +27,6 @@ import {
   DeleteOutlined,
   CalendarOutlined,
   FlagOutlined,
-  AimOutlined,
   TrophyOutlined,
   ClockCircleOutlined,
   ScheduleOutlined
