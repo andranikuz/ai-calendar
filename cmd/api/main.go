@@ -17,6 +17,7 @@ import (
 	"github.com/andranikuz/smart-goal-calendar/config"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/auth"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/google"
+	"github.com/andranikuz/smart-goal-calendar/internal/adapters/migrations"
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/postgres"
 	appHandlers "github.com/andranikuz/smart-goal-calendar/internal/application/handlers"
 	"github.com/andranikuz/smart-goal-calendar/internal/domain/services"
@@ -67,6 +68,18 @@ func main() {
 	}
 
 	zlog.Info().Msg("Database connected successfully")
+
+	// Run database migrations
+	migrator := migrations.NewMigrator(db.Pool)
+	if err := migrator.LoadMigrationsFromDir("migrations"); err != nil {
+		zlog.Fatal().Err(err).Msg("Failed to load migrations")
+	}
+	
+	if err := migrator.Migrate(); err != nil {
+		zlog.Fatal().Err(err).Msg("Failed to run migrations")
+	}
+	
+	zlog.Info().Msg("Database migrations completed successfully")
 
 	// Initialize repositories
 	userRepo := postgres.NewUserRepository(db.Pool)
