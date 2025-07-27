@@ -54,9 +54,9 @@
 ### ✅ 3.2 Система целей (COMPLETED - 27.07.2025)
 - [x] ~~SMART цели с валидацией~~
 - [x] ~~Разбивка целей на подзадачи~~
-- [ ] Автоматическое планирование времени для целей
+- [x] ~~Автоматическое планирование времени для целей~~
 - [x] ~~Прогресс трекинг~~
-- **Результат**: SMART validation система, hierarchical task management, real-time progress tracking
+- **Результат**: SMART validation система, hierarchical task management, real-time progress tracking, automatic time scheduling
 
 ### 3.3 Google Calendar интеграция
 - [x] ~~OAuth2 настройка для Google API~~

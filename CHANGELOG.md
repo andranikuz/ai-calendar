@@ -207,6 +207,44 @@
 ## [27.07.2025] - Выполнение команды "продолжи разработку"
 
 ### Выполненные действия:
+- Реализована **автоматическая система планирования времени для целей**
+- Создан утилитарный модуль `timeScheduler.ts` с полным алгоритмом планирования
+- Разработан компонент `TimeSchedulerModal` для интерактивного планирования времени
+- Интегрирована система планирования в `GoalDetailPanel` с кнопкой "Schedule Time"
+- Реализован анализ свободного времени в календаре пользователя
+- Создан умный алгоритм распределения времени по приоритетам и дедлайнам
+
+### Изменения в системе:
+- **Умное планирование времени**: Автоматический поиск оптимальных временных слотов для работы над целями
+- **Настраиваемые предпочтения**: Рабочие часы, дни недели, минимальная/максимальная длительность сессий
+- **Приоритизация задач**: Алгоритм учитывает приоритет целей, дедлайны и доступное время
+- **Интеллектуальное распределение**: Разбивка больших задач на управляемые рабочие сессии
+- **Календарная интеграция**: Создание tentative событий в календаре для запланированного времени
+- **Конфликт-детекция**: Автоматическое избежание существующих событий и настроенных перерывов
+- **Визуальная обратная связь**: Real-time анализ SMART критериев и предложения по улучшению планирования
+
+### Результаты:
+✅ Полноценный time scheduler с intelligent slot allocation  
+✅ Интерактивный UI для настройки предпочтений планирования  
+✅ Автоматическое создание calendar events для scheduled work sessions  
+✅ Conflict detection и smart avoidance алгоритмы  
+✅ Goal-priority based scheduling с deadline awareness  
+✅ Production-ready сборка без критических ошибок  
+
+### Технические детали:
+- Созданы файлы: `src/utils/timeScheduler.ts`, `src/components/Goals/TimeSchedulerModal.tsx`
+- Обновлены файлы: `src/components/Goals/GoalDetailPanel.tsx` (интеграция TimeSchedulerModal)
+- Features: Intelligent time slot finding, preference-based scheduling, calendar integration
+- Algorithms: Working hours filtering, break avoidance, priority-based allocation, session optimization
+- UX: Interactive preferences, visual time slot selection, scheduling suggestions with reasoning
+
+---
+
+**Статус проекта:** Автоматическое планирование времени завершено. Полная goal-to-calendar интеграция с умным распределением времени.
+
+## [27.07.2025] - Выполнение команды "продолжи разработку"
+
+### Выполненные действия:
 - Создан CLI `cmd/migrate` для применения миграций
 - Обновлена документация (README, architecture, development-plan, current-status)
 - Добавлен файл `docs/current-status.md`
