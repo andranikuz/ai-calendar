@@ -38,7 +38,7 @@ import {
   updateGoalProgress,
   deleteGoal 
 } from '../store/slices/goalsSlice';
-import GoalModal from '../components/Goals/GoalModal';
+import SMARTGoalModal from '../components/Goals/SMARTGoalModal';
 import GoalDetailPanel from '../components/Goals/GoalDetailPanel';
 import { Goal } from '../types/api';
 import dayjs from 'dayjs';
@@ -391,7 +391,7 @@ const GoalsPage: React.FC = () => {
       </Row>
 
       {/* Goal Modal */}
-      <GoalModal
+      <SMARTGoalModal
         visible={goalModalVisible}
         goal={editingGoal}
         onCancel={() => {

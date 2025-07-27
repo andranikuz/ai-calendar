@@ -34,6 +34,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { updateGoalProgress } from '../../store/slices/goalsSlice';
 import { Goal, Task, Milestone } from '../../types/api';
+import TaskTreeView from './TaskTreeView';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -289,6 +290,42 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
     }
   };
 
+  const handleTaskCreate = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      // TODO: Implement task creation API call
+      console.log('Create task:', taskData);
+      message.success('Task created successfully!');
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      message.error('Failed to create task');
+      throw error;
+    }
+  };
+
+  const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      // TODO: Implement task update API call
+      console.log('Update task:', taskId, updates);
+      message.success('Task updated successfully!');
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      message.error('Failed to update task');
+      throw error;
+    }
+  };
+
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      // TODO: Implement task deletion API call
+      console.log('Delete task:', taskId);
+      message.success('Task deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      message.error('Failed to delete task');
+      throw error;
+    }
+  };
+
   const handleCompleteMilestone = async (milestoneId: string) => {
     try {
       // Here you would dispatch to complete milestone
@@ -310,16 +347,80 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
       priority: 'high',
       deadline: dayjs().add(1, 'week').toISOString(),
       goal_id: goal.id,
+      order_index: 1,
+      created_at: dayjs().toISOString(),
+      updated_at: dayjs().toISOString()
+    },
+    {
+      id: '1-1',
+      title: 'Compare beginner programs',
+      description: 'Research Couch to 5K, C25K+ programs',
+      status: 'completed',
+      priority: 'medium',
+      goal_id: goal.id,
+      parent_task_id: '1',
+      order_index: 1,
+      created_at: dayjs().toISOString(),
+      updated_at: dayjs().toISOString()
+    },
+    {
+      id: '1-2',
+      title: 'Choose final training plan',
+      description: 'Select the most suitable plan based on research',
+      status: 'pending',
+      priority: 'high',
+      goal_id: goal.id,
+      parent_task_id: '1',
+      order_index: 2,
+      deadline: dayjs().add(3, 'days').toISOString(),
       created_at: dayjs().toISOString(),
       updated_at: dayjs().toISOString()
     },
     {
       id: '2',
+      title: 'Buy running gear',
+      description: 'Get proper equipment for training',
+      status: 'in_progress',
+      priority: 'medium',
+      goal_id: goal.id,
+      order_index: 2,
+      created_at: dayjs().toISOString(),
+      updated_at: dayjs().toISOString()
+    },
+    {
+      id: '2-1',
       title: 'Buy running shoes',
       description: 'Get proper running shoes for training',
       status: 'completed',
-      priority: 'medium',
+      priority: 'high',
       goal_id: goal.id,
+      parent_task_id: '2',
+      order_index: 1,
+      created_at: dayjs().toISOString(),
+      updated_at: dayjs().toISOString()
+    },
+    {
+      id: '2-2',
+      title: 'Buy moisture-wicking clothes',
+      description: 'Get appropriate running attire',
+      status: 'pending',
+      priority: 'low',
+      goal_id: goal.id,
+      parent_task_id: '2',
+      order_index: 2,
+      created_at: dayjs().toISOString(),
+      updated_at: dayjs().toISOString()
+    },
+    {
+      id: '3',
+      title: 'Start training routine',
+      description: 'Begin following the selected training plan',
+      status: 'pending',
+      priority: 'critical',
+      goal_id: goal.id,
+      order_index: 3,
+      deadline: dayjs().add(2, 'weeks').toISOString(),
+      estimated_duration: 120, // 2 hours per session
       created_at: dayjs().toISOString(),
       updated_at: dayjs().toISOString()
     }
@@ -554,104 +655,14 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
 
       <Divider />
 
-      {/* Tasks Section */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Title level={5} style={{ margin: 0 }}>
-            <AimOutlined /> Tasks
-          </Title>
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusOutlined />}
-            onClick={handleCreateTask}
-          >
-            Add Task
-          </Button>
-        </div>
-
-        {mockTasks.length === 0 ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="No tasks yet"
-          >
-            <Button type="primary" onClick={handleCreateTask}>
-              Create Task
-            </Button>
-          </Empty>
-        ) : (
-          <List
-            size="small"
-            dataSource={mockTasks}
-            renderItem={(task) => (
-              <List.Item
-                actions={[
-                  task.status !== 'completed' && (
-                    <Tooltip title="Mark as completed">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<CheckCircleOutlined />}
-                        onClick={() => handleCompleteTask(task.id)}
-                      />
-                    </Tooltip>
-                  ),
-                  <Tooltip title="Edit task">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<EditOutlined />}
-                      onClick={() => handleEditTask(task)}
-                    />
-                  </Tooltip>,
-                  <Popconfirm
-                    title="Are you sure you want to delete this task?"
-                    onConfirm={() => console.log('Delete task:', task.id)}
-                  >
-                    <Tooltip title="Delete task">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<DeleteOutlined />}
-                        danger
-                      />
-                    </Tooltip>
-                  </Popconfirm>
-                ].filter(Boolean)}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <Avatar
-                      size="small"
-                      style={{
-                        backgroundColor: task.status === 'completed' ? '#52c41a' : getPriorityColor(task.priority)
-                      }}
-                    >
-                      {task.status === 'completed' ? <CheckCircleOutlined /> : <AimOutlined />}
-                    </Avatar>
-                  }
-                  title={
-                    <Space>
-                      <Text strong={task.status !== 'completed'} delete={task.status === 'completed'}>
-                        {task.title}
-                      </Text>
-                      <Tag color={getPriorityColor(task.priority)}>
-                        {task.priority}
-                      </Tag>
-                      {task.deadline && (
-                        <Tag color={task.status === 'completed' ? 'green' : 'blue'}>
-                          <ClockCircleOutlined /> {dayjs(task.deadline).format('MMM DD')}
-                        </Tag>
-                      )}
-                    </Space>
-                  }
-                  description={task.description}
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </div>
+      {/* Tasks Section with Tree View */}
+      <TaskTreeView
+        tasks={mockTasks}
+        goalId={goal.id}
+        onTaskCreate={handleTaskCreate}
+        onTaskUpdate={handleTaskUpdate}
+        onTaskDelete={handleTaskDelete}
+      />
 
       {/* Modals */}
       <TaskModal

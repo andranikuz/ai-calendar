@@ -67,6 +67,7 @@ export interface CreateGoalRequest {
 export interface Task {
   id: string;
   goal_id: string;
+  parent_task_id?: string; // For subtasks
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -74,6 +75,8 @@ export interface Task {
   estimated_duration?: number;
   deadline?: string;
   completed_at?: string;
+  order_index: number; // For ordering tasks
+  subtasks?: Task[]; // Nested subtasks
   created_at: string;
   updated_at: string;
 }
