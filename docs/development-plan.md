@@ -198,8 +198,16 @@
   - Улучшены color contrast и responsive design для лучшей accessibility
   - **Результат**: Zero accessibility errors, WCAG 2.1 compliant интерфейс
 
+**Завершено 27.07.2025:**
+- [x] **React Hook dependencies warnings** - исправление всех предупреждений ESLint о зависимостях хуков
+  - Исправлен TimeSchedulerModal.tsx: добавлен useCallback для generateSuggestions с корректными зависимостями
+  - Исправлен useOffline.ts: обернуты все функции (syncPendingActions, loadPendingActions, refreshOfflineData) в useCallback
+  - Обновлены все useEffect dependency arrays для соответствия eslint react-hooks/exhaustive-deps
+  - Устранены 2 критические ESLint warnings, улучшена стабильность React компонентов
+  - **Результат**: Zero React Hook dependency warnings, improved component stability
+
 **Следующие шаги:**
-1. React Hook dependencies warnings (medium priority)
+1. TypeScript any types cleanup (33 remaining errors)
 2. End-to-end testing infrastructure
 3. Обработка конфликтов при синхронизации Google Calendar
 

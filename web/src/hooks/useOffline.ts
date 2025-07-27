@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { indexedDBManager } from '../utils/indexedDB';
 
 export interface OfflineAction {
@@ -57,13 +57,13 @@ export const useOffline = (): OfflineHookReturn => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [syncPendingActions]);
 
   // Load pending actions and offline data on mount
   useEffect(() => {
     loadPendingActions();
     refreshOfflineData();
-  }, []);
+  }, [loadPendingActions, refreshOfflineData]);
 
   // Listen for service worker messages
   useEffect(() => {
@@ -78,18 +78,18 @@ export const useOffline = (): OfflineHookReturn => {
         }
       });
     }
-  }, []);
+  }, [loadPendingActions, refreshOfflineData]);
 
-  const loadPendingActions = async () => {
+  const loadPendingActions = useCallback(async () => {
     try {
       const actions = await indexedDBManager.getPendingActions();
       setPendingActions(actions as unknown as OfflineAction[]);
     } catch (error) {
       console.error('Failed to load pending actions:', error);
     }
-  };
+  }, []);
 
-  const refreshOfflineData = async () => {
+  const refreshOfflineData = useCallback(async () => {
     try {
       const goals = await indexedDBManager.getAll('goals');
       const events = await indexedDBManager.getAll('events');
@@ -103,7 +103,7 @@ export const useOffline = (): OfflineHookReturn => {
     } catch (error) {
       console.error('Failed to refresh offline data:', error);
     }
-  };
+  }, []);
 
   const addOfflineAction = async (action: Omit<OfflineAction, 'id' | 'created_at' | 'retry_count'>) => {
     try {
@@ -135,7 +135,7 @@ export const useOffline = (): OfflineHookReturn => {
     }
   };
 
-  const syncPendingActions = async () => {
+  const syncPendingActions = useCallback(async () => {
     if (!isOnline || syncStatus === 'syncing') return;
 
     setSyncStatus('syncing');
@@ -197,7 +197,7 @@ export const useOffline = (): OfflineHookReturn => {
       // Reset to idle after 5 seconds
       setTimeout(() => setSyncStatus('idle'), 5000);
     }
-  };
+  }, [isOnline, syncStatus, loadPendingActions, refreshOfflineData]);
 
   const updateOfflineData = async (store: string, data: Record<string, unknown>) => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   Button,
@@ -66,13 +66,7 @@ const TimeSchedulerModal: React.FC<TimeSchedulerModalProps> = ({
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
   const [isScheduling, setIsScheduling] = useState(false);
 
-  useEffect(() => {
-    if (visible && goal) {
-      generateSuggestions();
-    }
-  }, [visible, goal]);
-
-  const generateSuggestions = async () => {
+  const generateSuggestions = useCallback(async () => {
     setIsGenerating(true);
     try {
       const allGoals = [goal]; // Focus on current goal
@@ -95,7 +89,13 @@ const TimeSchedulerModal: React.FC<TimeSchedulerModalProps> = ({
       message.error('Failed to generate scheduling suggestions');
     }
     setIsGenerating(false);
-  };
+  }, [goal, tasks, events, preferences]);
+
+  useEffect(() => {
+    if (visible && goal) {
+      generateSuggestions();
+    }
+  }, [visible, goal, generateSuggestions]);
 
   const handleScheduleSelected = async () => {
     if (selectedSuggestions.size === 0) {
