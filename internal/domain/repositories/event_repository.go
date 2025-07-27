@@ -31,6 +31,9 @@ type EventRepository interface {
 	// Get events by external source
 	GetByExternalSource(ctx context.Context, userID entities.UserID, source string) ([]*entities.Event, error)
 	
+	// Get event by Google Event ID
+	GetByGoogleEventID(ctx context.Context, googleEventID string) (*entities.Event, error)
+	
 	// Get upcoming events for a user
 	GetUpcoming(ctx context.Context, userID entities.UserID, limit int) ([]*entities.Event, error)
 	

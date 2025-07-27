@@ -50,7 +50,10 @@ type GoogleCalendarSyncRepository interface {
 	GetByIntegrationID(ctx context.Context, integrationID entities.GoogleIntegrationID) ([]*entities.GoogleCalendarSync, error)
 	
 	// Get sync configuration by calendar ID
-	GetByCalendarID(ctx context.Context, userID entities.UserID, calendarID string) (*entities.GoogleCalendarSync, error)
+	GetByCalendarID(ctx context.Context, calendarID string) (*entities.GoogleCalendarSync, error)
+	
+	// Get sync configuration by webhook channel ID
+	GetByChannelID(ctx context.Context, channelID string) (*entities.GoogleCalendarSync, error)
 	
 	// Update sync configuration
 	Update(ctx context.Context, sync *entities.GoogleCalendarSync) error

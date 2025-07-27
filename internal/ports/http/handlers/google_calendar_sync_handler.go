@@ -85,7 +85,7 @@ func (h *GoogleCalendarSyncHandler) CreateCalendarSync(c *gin.Context) {
 	}
 
 	// Check if sync already exists for this calendar
-	existingSync, err := h.googleCalendarSyncRepo.GetByCalendarID(c.Request.Context(), userID, req.CalendarID)
+	existingSync, err := h.googleCalendarSyncRepo.GetByCalendarID(c.Request.Context(), req.CalendarID)
 	if err == nil && existingSync != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Sync configuration already exists for this calendar"})
 		return
@@ -433,13 +433,18 @@ func (h *GoogleCalendarSyncHandler) syncToGoogle(ctx context.Context, sync *enti
 }
 
 func (h *GoogleCalendarSyncHandler) toSyncConfigResponse(sync *entities.GoogleCalendarSync) CalendarSyncConfigResponse {
+	var lastSyncAt *time.Time
+	if !sync.LastSyncAt.IsZero() {
+		lastSyncAt = &sync.LastSyncAt
+	}
+	
 	return CalendarSyncConfigResponse{
 		ID:            sync.ID,
 		CalendarID:    sync.CalendarID,
 		CalendarName:  sync.CalendarName,
 		SyncDirection: sync.SyncDirection,
 		SyncStatus:    sync.SyncStatus,
-		LastSyncAt:    sync.LastSyncAt,
+		LastSyncAt:    lastSyncAt,
 		LastSyncError: sync.LastSyncError,
 		Settings:      sync.Settings,
 		CreatedAt:     sync.CreatedAt,

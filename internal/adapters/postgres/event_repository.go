@@ -197,6 +197,32 @@ func (r *eventRepository) GetByExternalID(ctx context.Context, userID entities.U
 	return &event, nil
 }
 
+func (r *eventRepository) GetByGoogleEventID(ctx context.Context, googleEventID string) (*entities.Event, error) {
+	query := `
+		SELECT id, user_id, goal_id, title, description, start_time, end_time,
+			   timezone, recurrence, location, attendees, status, external_id,
+			   external_source, google_event_id, created_at, updated_at
+		FROM events 
+		WHERE google_event_id = $1`
+	
+	var event entities.Event
+	err := r.pool.QueryRow(ctx, query, googleEventID).Scan(
+		&event.ID, &event.UserID, &event.GoalID, &event.Title, &event.Description,
+		&event.StartTime, &event.EndTime, &event.Timezone, &event.Recurrence,
+		&event.Location, &event.Attendees, &event.Status, &event.ExternalID,
+		&event.ExternalSource, &event.GoogleEventID, &event.CreatedAt, &event.UpdatedAt,
+	)
+	
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("event not found")
+		}
+		return nil, fmt.Errorf("failed to get event by google event id: %w", err)
+	}
+	
+	return &event, nil
+}
+
 func (r *eventRepository) GetByExternalSource(ctx context.Context, userID entities.UserID, source string) ([]*entities.Event, error) {
 	query := `
 		SELECT id, user_id, goal_id, title, description, start_time, end_time,

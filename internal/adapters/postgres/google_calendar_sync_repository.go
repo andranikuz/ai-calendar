@@ -30,8 +30,9 @@ func (r *googleCalendarSyncRepository) Create(ctx context.Context, sync *entitie
 		INSERT INTO google_calendar_syncs (
 			id, user_id, google_integration_id, calendar_id, calendar_name,
 			sync_direction, sync_status, last_sync_at, last_sync_error,
-			sync_token, settings, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
+			sync_token, settings, webhook_channel_id, webhook_url, 
+			webhook_resource_id, webhook_expires_at, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`
 
 	_, err = r.db.Exec(ctx, query,
 		sync.ID,
@@ -45,6 +46,10 @@ func (r *googleCalendarSyncRepository) Create(ctx context.Context, sync *entitie
 		sync.LastSyncError,
 		sync.SyncToken,
 		settingsJSON,
+		sync.WebhookChannelID,
+		sync.WebhookURL,
+		sync.WebhookResourceID,
+		sync.WebhookExpiresAt,
 		sync.CreatedAt,
 		sync.UpdatedAt,
 	)
@@ -56,7 +61,8 @@ func (r *googleCalendarSyncRepository) GetByID(ctx context.Context, id string) (
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
 		WHERE id = $1`
 
@@ -67,7 +73,8 @@ func (r *googleCalendarSyncRepository) GetByUserID(ctx context.Context, userID e
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
 		WHERE user_id = $1
 		ORDER BY created_at DESC`
@@ -85,7 +92,8 @@ func (r *googleCalendarSyncRepository) GetByIntegrationID(ctx context.Context, i
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
 		WHERE google_integration_id = $1
 		ORDER BY created_at DESC`
@@ -99,15 +107,28 @@ func (r *googleCalendarSyncRepository) GetByIntegrationID(ctx context.Context, i
 	return r.scanCalendarSyncs(rows)
 }
 
-func (r *googleCalendarSyncRepository) GetByCalendarID(ctx context.Context, userID entities.UserID, calendarID string) (*entities.GoogleCalendarSync, error) {
+func (r *googleCalendarSyncRepository) GetByCalendarID(ctx context.Context, calendarID string) (*entities.GoogleCalendarSync, error) {
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
-		WHERE user_id = $1 AND calendar_id = $2`
+		WHERE calendar_id = $1`
 
-	return r.scanCalendarSync(r.db.QueryRow(ctx, query, userID, calendarID))
+	return r.scanCalendarSync(r.db.QueryRow(ctx, query, calendarID))
+}
+
+func (r *googleCalendarSyncRepository) GetByChannelID(ctx context.Context, channelID string) (*entities.GoogleCalendarSync, error) {
+	query := `
+		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
+			   sync_direction, sync_status, last_sync_at, last_sync_error,
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
+		FROM google_calendar_syncs
+		WHERE webhook_channel_id = $1`
+
+	return r.scanCalendarSync(r.db.QueryRow(ctx, query, channelID))
 }
 
 func (r *googleCalendarSyncRepository) Update(ctx context.Context, sync *entities.GoogleCalendarSync) error {
@@ -120,7 +141,8 @@ func (r *googleCalendarSyncRepository) Update(ctx context.Context, sync *entitie
 		UPDATE google_calendar_syncs
 		SET calendar_name = $2, sync_direction = $3, sync_status = $4,
 			last_sync_at = $5, last_sync_error = $6, sync_token = $7,
-			settings = $8, updated_at = $9
+			settings = $8, webhook_channel_id = $9, webhook_url = $10,
+			webhook_resource_id = $11, webhook_expires_at = $12, updated_at = $13
 		WHERE id = $1`
 
 	result, err := r.db.Exec(ctx, query,
@@ -132,6 +154,10 @@ func (r *googleCalendarSyncRepository) Update(ctx context.Context, sync *entitie
 		sync.LastSyncError,
 		sync.SyncToken,
 		settingsJSON,
+		sync.WebhookChannelID,
+		sync.WebhookURL,
+		sync.WebhookResourceID,
+		sync.WebhookExpiresAt,
 		time.Now(),
 	)
 
@@ -201,7 +227,8 @@ func (r *googleCalendarSyncRepository) GetNeedingSync(ctx context.Context) ([]*e
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
 		WHERE sync_status = 'active'
 		  AND (last_sync_at IS NULL OR 
@@ -221,7 +248,8 @@ func (r *googleCalendarSyncRepository) GetActive(ctx context.Context) ([]*entiti
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
 			   sync_direction, sync_status, last_sync_at, last_sync_error,
-			   sync_token, settings, created_at, updated_at
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
 		FROM google_calendar_syncs
 		WHERE sync_status = 'active'
 		ORDER BY created_at DESC`
@@ -260,6 +288,10 @@ func (r *googleCalendarSyncRepository) scanCalendarSync(row interface{}) (*entit
 		&sync.LastSyncError,
 		&sync.SyncToken,
 		&settingsJSON,
+		&sync.WebhookChannelID,
+		&sync.WebhookURL,
+		&sync.WebhookResourceID,
+		&sync.WebhookExpiresAt,
 		&sync.CreatedAt,
 		&sync.UpdatedAt,
 	)
@@ -307,6 +339,10 @@ func (r *googleCalendarSyncRepository) scanCalendarSyncs(rows interface{}) ([]*e
 			&sync.LastSyncError,
 			&sync.SyncToken,
 			&settingsJSON,
+			&sync.WebhookChannelID,
+			&sync.WebhookURL,
+			&sync.WebhookResourceID,
+			&sync.WebhookExpiresAt,
 			&sync.CreatedAt,
 			&sync.UpdatedAt,
 		)

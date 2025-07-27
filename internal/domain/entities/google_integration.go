@@ -31,10 +31,15 @@ type GoogleCalendarSync struct {
 	CalendarName        string                  `json:"calendar_name"`
 	SyncDirection       CalendarSyncDirection   `json:"sync_direction"`
 	SyncStatus          CalendarSyncStatus      `json:"sync_status"`
-	LastSyncAt          *time.Time              `json:"last_sync_at"`
+	LastSyncAt          time.Time               `json:"last_sync_at"`
 	LastSyncError       string                  `json:"last_sync_error"`
 	SyncToken           string                  `json:"sync_token"`
 	Settings            CalendarSyncSettings    `json:"settings"`
+	// Webhook fields
+	WebhookChannelID    string                  `json:"webhook_channel_id"`
+	WebhookURL          string                  `json:"webhook_url"`
+	WebhookResourceID   string                  `json:"webhook_resource_id"`
+	WebhookExpiresAt    *time.Time              `json:"webhook_expires_at"`
 	CreatedAt           time.Time               `json:"created_at"`
 	UpdatedAt           time.Time               `json:"updated_at"`
 }
@@ -95,11 +100,11 @@ func (gcs *GoogleCalendarSync) NeedsSync() bool {
 		return false
 	}
 
-	if gcs.LastSyncAt == nil {
+	if gcs.LastSyncAt.IsZero() {
 		return true
 	}
 
-	return time.Now().Sub(*gcs.LastSyncAt) >= gcs.Settings.SyncInterval
+	return time.Now().Sub(gcs.LastSyncAt) >= gcs.Settings.SyncInterval
 }
 
 // Default settings

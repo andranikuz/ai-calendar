@@ -31,6 +31,33 @@ type GoogleCalendarEvent struct {
 	CalendarID  string    `json:"calendar_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Status      string    `json:"status"`
+	Attendees   []EventAttendee `json:"attendees"`
+}
+
+// CalendarEvent represents a simplified Google Calendar event for webhook processing
+type CalendarEvent struct {
+	ID          string `json:"id"`
+	Summary     string `json:"summary"`
+	Description string `json:"description"`
+	Location    string `json:"location"`
+	Status      string `json:"status"`
+	Start       struct {
+		DateTime string `json:"dateTime"`
+		Date     string `json:"date"`
+		TimeZone string `json:"timeZone"`
+	} `json:"start"`
+	End struct {
+		DateTime string `json:"dateTime"`
+		Date     string `json:"date"`
+		TimeZone string `json:"timeZone"`
+	} `json:"end"`
+	Attendees []EventAttendee `json:"attendees"`
+}
+
+type EventAttendee struct {
+	Email string `json:"email"`
+	Name  string `json:"displayName"`
 }
 
 type CalendarListItem struct {
@@ -230,4 +257,50 @@ func (s *CalendarService) convertCalendarEvent(event *calendar.Event, calendarID
 	}
 
 	return googleEvent
+}
+
+// SetupWebhook sets up a webhook for a Google Calendar
+func (s *CalendarService) SetupWebhook(ctx context.Context, accessToken, calendarID, channelID, webhookURL string) error {
+	service, err := s.oauth2Service.CreateCalendarService(ctx, accessToken)
+	if err != nil {
+		return fmt.Errorf("failed to create calendar service: %w", err)
+	}
+
+	// Create a watch request
+	channel := &calendar.Channel{
+		Id:      channelID,
+		Type:    "web_hook",
+		Address: webhookURL,
+		Payload: true,
+	}
+
+	// Set up the webhook for the calendar events
+	_, err = service.Events.Watch(calendarID, channel).Do()
+	if err != nil {
+		return fmt.Errorf("failed to setup webhook: %w", err)
+	}
+
+	return nil
+}
+
+// StopWebhook stops a webhook for a Google Calendar
+func (s *CalendarService) StopWebhook(ctx context.Context, accessToken, channelID, resourceID string) error {
+	service, err := s.oauth2Service.CreateCalendarService(ctx, accessToken)
+	if err != nil {
+		return fmt.Errorf("failed to create calendar service: %w", err)
+	}
+
+	// Create stop request
+	channel := &calendar.Channel{
+		Id:         channelID,
+		ResourceId: resourceID,
+	}
+
+	// Stop the webhook
+	err = service.Channels.Stop(channel).Do()
+	if err != nil {
+		return fmt.Errorf("failed to stop webhook: %w", err)
+	}
+
+	return nil
 }

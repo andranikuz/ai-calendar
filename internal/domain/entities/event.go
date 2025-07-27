@@ -21,6 +21,7 @@ type Event struct {
 	Status      EventStatus `json:"status"`
 	ExternalID  string    `json:"external_id,omitempty"` // For Google Calendar sync
 	ExternalSource string `json:"external_source,omitempty"` // 'google', 'outlook', etc.
+	GoogleEventID *string `json:"google_event_id,omitempty"` // Google Calendar Event ID for webhook sync
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

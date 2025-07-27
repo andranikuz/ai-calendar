@@ -137,6 +137,13 @@ func main() {
 		googleCalendarSyncRepo,
 		eventRepo,
 	)
+	googleWebhookHandler := httpHandlers.NewGoogleWebhookHandler(
+		calendarService,
+		oauth2Service,
+		googleIntegrationRepo,
+		googleCalendarSyncRepo,
+		eventRepo,
+	)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
@@ -184,6 +191,9 @@ func main() {
 
 		// Setup Google calendar sync routes
 		routes.SetupGoogleCalendarSyncRoutes(v1, googleCalendarSyncHandler, authMiddleware)
+
+		// Setup Google webhook routes
+		routes.RegisterGoogleWebhookRoutes(v1, googleWebhookHandler, authMiddleware)
 	}
 
 	// Setup HTTP server
