@@ -1,5 +1,5 @@
 import { apiService } from './api';
-import { Goal, Task, Milestone, CreateGoalRequest, PaginatedResponse } from '../types/api';
+import { Goal, Task, Milestone, CreateGoalRequest } from '../types/api';
 
 export class GoalsService {
   async getGoals(params?: { offset?: number; limit?: number }): Promise<{ goals: Goal[] }> {

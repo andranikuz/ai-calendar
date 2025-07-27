@@ -32,6 +32,17 @@ import dayjs from 'dayjs';
 const { TextArea } = Input;
 const { Text } = Typography;
 
+interface TaskNode extends Task {
+  children: TaskNode[];
+}
+
+interface TreeNodeData {
+  key: string;
+  title: React.ReactNode;
+  children: TreeNodeData[];
+  task: TaskNode;
+}
+
 interface TaskTreeViewProps {
   tasks: Task[];
   onTaskCreate: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -54,9 +65,9 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
   const [form] = Form.useForm();
 
   // Build tree structure from flat task list
-  const buildTaskTree = (tasks: Task[]): any[] => {
-    const taskMap = new Map<string, any>();
-    const rootTasks: any[] = [];
+  const buildTaskTree = (tasks: Task[]): TreeNodeData[] => {
+    const taskMap = new Map<string, TaskNode>();
+    const rootTasks: TreeNodeData[] = [];
 
     // Create task map
     tasks.forEach(task => {

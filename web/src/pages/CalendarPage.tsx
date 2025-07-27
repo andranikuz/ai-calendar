@@ -32,7 +32,7 @@ const CalendarPage: React.FC = () => {
   const { calendarSyncs, isConnected } = useAppSelector(state => state.google);
   
   const [eventModalVisible, setEventModalVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,13 +60,13 @@ const CalendarPage: React.FC = () => {
     dispatch(navigateDate(direction));
   };
 
-  const handleDateSelect = (selectInfo: any) => {
+  const handleDateSelect = (selectInfo: { startStr: string; endStr: string }) => {
     setSelectedDate(selectInfo.startStr);
     setSelectedEvent(null);
     setEventModalVisible(true);
   };
 
-  const handleEventClick = (clickInfo: any) => {
+  const handleEventClick = (clickInfo: { event: { extendedProps: Record<string, unknown> } }) => {
     const { extendedProps } = clickInfo.event;
     
     if (extendedProps.isInstance) {
@@ -83,7 +83,7 @@ const CalendarPage: React.FC = () => {
     setEventModalVisible(true);
   };
 
-  const handleEventDrop = async (dropInfo: any) => {
+  const handleEventDrop = async (dropInfo: { event: { extendedProps: Record<string, unknown>; id: string; start: Date; end: Date | null } }) => {
     const { event } = dropInfo;
     const { extendedProps } = event;
     
@@ -133,7 +133,7 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const handleEventResize = async (resizeInfo: any) => {
+  const handleEventResize = async (resizeInfo: { event: { extendedProps: Record<string, unknown>; id: string; start: Date; end: Date | null }; revert: () => void }) => {
     const { event } = resizeInfo;
     const { extendedProps } = event;
     
@@ -207,7 +207,14 @@ const CalendarPage: React.FC = () => {
     const viewStart = currentView?.currentStart || dayjs().subtract(1, 'month').toDate();
     const viewEnd = currentView?.currentEnd || dayjs().add(1, 'month').toDate();
     
-    const allEvents: any[] = [];
+    const allEvents: Array<{
+      id: string;
+      title: string;
+      start: string;
+      end: string;
+      color: string;
+      extendedProps: Record<string, unknown>;
+    }> = [];
     
     events.forEach(event => {
       // Add the main event

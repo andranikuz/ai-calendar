@@ -253,7 +253,7 @@ export class IndexedDBManager {
     });
   }
 
-  async getSyncMetadata(store: string): Promise<any> {
+  async getSyncMetadata(store: string): Promise<{ lastSync: string; version: number } | null> {
     return this.get('syncMetadata', store);
   }
 
@@ -284,7 +284,7 @@ export class IndexedDBManager {
 
     return allItems.filter(item => {
       return fields.some(field => {
-        const value = (item as any)[field];
+        const value = (item as Record<string, unknown>)[field];
         if (typeof value === 'string') {
           return value.toLowerCase().includes(lowercaseSearch);
         }
@@ -304,9 +304,10 @@ export class IndexedDBManager {
     const store = transaction.objectStore(storeName);
 
     allItems.forEach(item => {
-      const updatedAt = new Date((item as any).updated_at || (item as any).created_at);
-      if (updatedAt < cutoffDate && (item as any).sync_status === 'synced') {
-        store.delete((item as any).id);
+      const itemRecord = item as Record<string, unknown>;
+      const updatedAt = new Date((itemRecord.updated_at || itemRecord.created_at) as string);
+      if (updatedAt < cutoffDate && itemRecord.sync_status === 'synced') {
+        store.delete(itemRecord.id as string);
       }
     });
   }

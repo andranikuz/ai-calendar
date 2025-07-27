@@ -13,8 +13,8 @@ export class GoogleService {
   async getIntegration(): Promise<GoogleIntegration | null> {
     try {
       return await apiService.get('/google/integration');
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error: unknown) {
+      if ((error as { response?: { status: number } }).response?.status === 404) {
         return null;
       }
       throw error;

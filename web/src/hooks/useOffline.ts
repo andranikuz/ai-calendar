@@ -123,7 +123,8 @@ export const useOffline = (): OfflineHookReturn => {
         try {
           const registration = await navigator.serviceWorker.ready;
           if ('sync' in registration) {
-            await (registration as any).sync.register('sync-data');
+            const syncRegistration = registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } };
+            await syncRegistration.sync.register('sync-data');
           }
         } catch (error) {
           console.log('Background sync not supported:', error);
@@ -149,9 +150,9 @@ export const useOffline = (): OfflineHookReturn => {
             method: action.method as string,
             headers: {
               'Content-Type': 'application/json',
-              ...(action as any).headers
+              ...((action as unknown as { headers?: Record<string, string> }).headers || {})
             },
-            body: (action as any).body
+            body: (action as unknown as { body?: string }).body
           });
 
           if (response.ok) {
@@ -163,12 +164,13 @@ export const useOffline = (): OfflineHookReturn => {
               const responseData = await response.json();
               await updateOfflineData(action.store as string, responseData);
             } else if (action.type === 'delete') {
-              await removeFromOfflineData(action.store as string, (action.data as any).id);
+              await removeFromOfflineData(action.store as string, (action.data as { id: string }).id);
             }
           } else {
             // Increment retry count for failed actions
-            (action as any).retry_count += 1;
-            if ((action as any).retry_count < 3) {
+            const actionWithRetry = action as unknown as { retry_count: number };
+            actionWithRetry.retry_count += 1;
+            if (actionWithRetry.retry_count < 3) {
               await indexedDBManager.put('pendingActions', action);
             } else {
               // Remove after 3 failed attempts
@@ -178,8 +180,9 @@ export const useOffline = (): OfflineHookReturn => {
         } catch (error) {
           console.error('Failed to sync action:', action, error);
           // Increment retry count
-          (action as any).retry_count += 1;
-          if ((action as any).retry_count < 3) {
+          const actionWithRetry = action as unknown as { retry_count: number };
+          actionWithRetry.retry_count += 1;
+          if (actionWithRetry.retry_count < 3) {
             await indexedDBManager.put('pendingActions', action);
           } else {
             await indexedDBManager.removePendingAction(action.id as number);

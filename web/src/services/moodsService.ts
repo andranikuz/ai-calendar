@@ -37,8 +37,8 @@ export class MoodsService {
   async getTodayMood(): Promise<Mood | null> {
     try {
       return await apiService.get('/moods/latest');
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error: unknown) {
+      if ((error as { response?: { status: number } }).response?.status === 404) {
         return null;
       }
       throw error;
@@ -48,8 +48,8 @@ export class MoodsService {
   async getMoodByDate(date: string): Promise<Mood | null> {
     try {
       return await apiService.get(`/moods/by-date?date=${date}`);
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error: unknown) {
+      if ((error as { response?: { status: number } }).response?.status === 404) {
         return null;
       }
       throw error;

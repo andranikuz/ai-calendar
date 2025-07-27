@@ -67,7 +67,7 @@ export function rruleToRecurrence(rruleString: string): Recurrence | null {
     }
 
     if (options.byweekday && options.byweekday.length > 0) {
-      recurrence.byweekday = options.byweekday.map((day: any) => 
+      recurrence.byweekday = options.byweekday.map((day: number | { weekday: number }) => 
         typeof day === 'number' ? day : day.weekday
       );
     }
@@ -133,7 +133,7 @@ export function generateEventInstances(
 /**
  * Check if a date is an exception (deleted occurrence) for a recurring event
  */
-export function isExceptionDate(event: Event, date: Date): boolean {
+export function isExceptionDate(): boolean {
   // TODO: Implement exception handling when we add support for it
   return false;
 }
