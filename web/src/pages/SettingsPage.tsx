@@ -48,7 +48,6 @@ import { GoogleCalendar, GoogleCalendarSync } from '../types/api';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 interface CalendarSyncModalProps {
   visible: boolean;

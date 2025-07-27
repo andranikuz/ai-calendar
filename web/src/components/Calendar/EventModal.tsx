@@ -342,17 +342,27 @@ const EventModal: React.FC<EventModalProps> = ({
 
         <Form.Item label="Repeat">
           <Space direction="vertical" style={{ width: '100%' }}>
-            <div style={{ 
-              border: '1px solid #d9d9d9', 
-              borderRadius: 6, 
-              padding: 12,
-              backgroundColor: '#fafafa',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-            onClick={() => setRecurrenceModalVisible(true)}
+            <div 
+              role="button"
+              tabIndex={0}
+              style={{ 
+                border: '1px solid #d9d9d9', 
+                borderRadius: 6, 
+                padding: 12,
+                backgroundColor: '#fafafa',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+              onClick={() => setRecurrenceModalVisible(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setRecurrenceModalVisible(true);
+                }
+              }}
+              aria-label="Edit recurrence settings"
             >
               <Text>{formatRecurrenceText(currentRecurrence)}</Text>
               <Button 

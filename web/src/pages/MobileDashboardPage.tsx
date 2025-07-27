@@ -263,7 +263,15 @@ const MobileDashboardPage: React.FC = () => {
             {quickActions.map((action) => (
               <Col span={8} key={action.key}>
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleQuickAction(action.key)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleQuickAction(action.key);
+                    }
+                  }}
                   style={{
                     textAlign: 'center',
                     padding: 12,
@@ -273,6 +281,7 @@ const MobileDashboardPage: React.FC = () => {
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
+                  aria-label={`${action.title}: ${action.description}`}
                 >
                   <div style={{ fontSize: 24, marginBottom: 4 }}>
                     {action.icon}

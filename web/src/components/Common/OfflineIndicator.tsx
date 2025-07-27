@@ -107,10 +107,19 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   return (
     <Tooltip title={tooltipTitle}>
       <div 
+        role={isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? 'button' : undefined}
+        tabIndex={isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? 0 : undefined}
         onClick={isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? handleSyncClick : undefined}
+        onKeyDown={isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSyncClick();
+          }
+        } : undefined}
         style={{ 
           cursor: isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? 'pointer' : 'default'
         }}
+        aria-label={isOnline && pendingActions.length > 0 && syncStatus === 'idle' ? 'Sync pending changes' : undefined}
       >
         {indicator}
       </div>

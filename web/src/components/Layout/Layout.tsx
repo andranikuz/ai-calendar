@@ -27,6 +27,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/slices/authSlice';
 import { getIntegration } from '../../store/slices/googleSlice';
 import OfflineIndicator from '../Common/OfflineIndicator';
+import SkipLinks from '../Common/SkipLinks';
 
 const { Header, Sider, Content } = AntLayout;
 const { Text } = Typography;
@@ -94,7 +95,9 @@ const Layout: React.FC = () => {
   ];
 
   return (
-    <AntLayout style={{ minHeight: '100vh' }}>
+    <>
+      <SkipLinks />
+      <AntLayout style={{ minHeight: '100vh' }} role="application">
       <Sider 
         trigger={null} 
         collapsible 
@@ -104,8 +107,11 @@ const Layout: React.FC = () => {
           background: '#fff',
           borderRight: '1px solid #f0f0f0',
         }}
+        role="navigation"
+        aria-label="Main navigation"
+        id="main-navigation"
       >
-        <div style={{ 
+        <header style={{ 
           padding: '16px', 
           borderBottom: '1px solid #f0f0f0',
           textAlign: 'center'
@@ -113,7 +119,7 @@ const Layout: React.FC = () => {
           <Typography.Title level={4} style={{ margin: 0, color: '#1677ff' }}>
             {collapsed ? 'SGC' : 'Smart Goal Calendar'}
           </Typography.Title>
-        </div>
+        </header>
         
         <Menu
           mode="inline"
@@ -158,7 +164,7 @@ const Layout: React.FC = () => {
             />
           </Space>
           
-          <Space>
+          <Space role="toolbar" aria-label="User actions" id="user-actions">
             <OfflineIndicator showDetails />
             
             {isConnected && (
@@ -182,17 +188,23 @@ const Layout: React.FC = () => {
           </Space>
         </Header>
         
-        <Content style={{ 
-          margin: '24px',
-          padding: '24px',
-          background: '#fff',
-          borderRadius: '8px',
-          minHeight: 'calc(100vh - 112px)'
-        }}>
+        <Content 
+          style={{ 
+            margin: '24px',
+            padding: '24px',
+            background: '#fff',
+            borderRadius: '8px',
+            minHeight: 'calc(100vh - 112px)'
+          }}
+          role="main"
+          aria-label="Main content"
+          id="main-content"
+        >
           <Outlet />
         </Content>
       </AntLayout>
     </AntLayout>
+    </>
   );
 };
 
