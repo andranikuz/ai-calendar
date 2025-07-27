@@ -150,7 +150,6 @@
 - [x] Docker окружение
 
 **В работе:**
-- [ ] Автоматическое продление webhook подписок
 - [ ] Обработка конфликтов при синхронизации
 - [ ] Advanced анимации и микроинтеракции
 - [ ] Testing infrastructure setup
@@ -174,13 +173,20 @@
   - Добавлены integration test helpers с automated database setup/cleanup
   - 40+ unit tests с 100% success rate и full business logic coverage
   - Test documentation и CI/CD ready framework
+- [x] **Automatic Webhook Renewal System** - автоматическое продление webhook подписок Google Calendar
+  - Создан WebhookRenewalService для мониторинга и автоматического обновления webhook подписок
+  - Реализована система expiry tracking с поддержкой WebhookExpiresAt поля
+  - Добавлены методы SetupWebhookWithExpiry и GetActiveWebhooks в CalendarService и Repository
+  - Интегрирован background service в основное приложение с graceful shutdown
+  - Настроено автоматическое продление за 24 часа до истечения срока (каждый час проверка)
+  - Unit тесты для webhook renewal logic и lifecycle management
 
 **Следующие шаги:**
-1. Автоматическое продление webhook подписок
-2. Ant Design bundle optimization (tree shaking)
-3. Advanced accessibility (WCAG 2.1)
-4. React Hook dependencies warnings (medium priority)
-5. End-to-end testing infrastructure
+1. Ant Design bundle optimization (tree shaking)
+2. Advanced accessibility (WCAG 2.1)
+3. React Hook dependencies warnings (medium priority)
+4. End-to-end testing infrastructure
+5. Обработка конфликтов при синхронизации Google Calendar
 
 ---
 

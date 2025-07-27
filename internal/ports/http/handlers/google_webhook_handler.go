@@ -373,7 +373,6 @@ func (h *GoogleWebhookHandler) SetupWebhook(c *gin.Context) {
 	}
 
 	// Setup webhook with Google Calendar API
-	channelID := uuid.New().String()
 	webhookURL := fmt.Sprintf("https://your-domain.com/api/v1/google/webhook") // TODO: Make this configurable
 	
 	accessToken := integration.AccessToken
@@ -394,15 +393,17 @@ func (h *GoogleWebhookHandler) SetupWebhook(c *gin.Context) {
 		accessToken = newTokens.AccessToken
 	}
 
-	err = h.calendarService.SetupWebhook(c.Request.Context(), accessToken, req.CalendarID, channelID, webhookURL)
+	webhookResult, err := h.calendarService.SetupWebhookWithExpiry(c.Request.Context(), accessToken, req.CalendarID, webhookURL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to setup webhook with Google"})
 		return
 	}
 
 	// Update sync configuration with webhook details
-	sync.WebhookChannelID = channelID
+	sync.WebhookChannelID = webhookResult.ChannelID
 	sync.WebhookURL = webhookURL
+	sync.WebhookResourceID = webhookResult.ResourceID
+	sync.WebhookExpiresAt = &webhookResult.ExpiresAt
 	sync.UpdatedAt = time.Now()
 
 	err = h.googleCalendarSyncRepo.Update(c.Request.Context(), sync)
@@ -413,7 +414,9 @@ func (h *GoogleWebhookHandler) SetupWebhook(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Webhook setup successfully",
-		"channel_id": channelID,
+		"channel_id": webhookResult.ChannelID,
+		"resource_id": webhookResult.ResourceID,
 		"webhook_url": webhookURL,
+		"expires_at": webhookResult.ExpiresAt,
 	})
 }

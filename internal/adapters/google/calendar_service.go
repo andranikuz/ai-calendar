@@ -259,6 +259,13 @@ func (s *CalendarService) convertCalendarEvent(event *calendar.Event, calendarID
 	return googleEvent
 }
 
+// WebhookResult contains information about a created webhook
+type WebhookResult struct {
+	ChannelID   string    `json:"channel_id"`
+	ResourceID  string    `json:"resource_id"`
+	ExpiresAt   time.Time `json:"expires_at"`
+}
+
 // SetupWebhook sets up a webhook for a Google Calendar
 func (s *CalendarService) SetupWebhook(ctx context.Context, accessToken, calendarID, channelID, webhookURL string) error {
 	service, err := s.oauth2Service.CreateCalendarService(ctx, accessToken)
@@ -281,6 +288,47 @@ func (s *CalendarService) SetupWebhook(ctx context.Context, accessToken, calenda
 	}
 
 	return nil
+}
+
+// SetupWebhookWithExpiry sets up a webhook and returns detailed information including expiry
+func (s *CalendarService) SetupWebhookWithExpiry(ctx context.Context, accessToken, calendarID, webhookURL string) (*WebhookResult, error) {
+	service, err := s.oauth2Service.CreateCalendarService(ctx, accessToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create calendar service: %w", err)
+	}
+
+	// Generate a unique channel ID
+	channelID := fmt.Sprintf("webhook-%d", time.Now().UnixNano())
+
+	// Create a watch request
+	channel := &calendar.Channel{
+		Id:      channelID,
+		Type:    "web_hook",
+		Address: webhookURL,
+		Payload: true,
+	}
+
+	// Set up the webhook for the calendar events
+	result, err := service.Events.Watch(calendarID, channel).Do()
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup webhook: %w", err)
+	}
+
+	// Parse expiration time from the result
+	var expiresAt time.Time
+	if result.Expiration != 0 {
+		// Google returns expiration as Unix timestamp in milliseconds
+		expiresAt = time.Unix(0, result.Expiration*int64(time.Millisecond))
+	} else {
+		// If no expiration is provided, assume 7 days (Google's default)
+		expiresAt = time.Now().Add(7 * 24 * time.Hour)
+	}
+
+	return &WebhookResult{
+		ChannelID:  result.Id,
+		ResourceID: result.ResourceId,
+		ExpiresAt:  expiresAt,
+	}, nil
 }
 
 // StopWebhook stops a webhook for a Google Calendar

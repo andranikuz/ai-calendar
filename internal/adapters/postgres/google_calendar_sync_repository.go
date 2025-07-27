@@ -244,6 +244,27 @@ func (r *googleCalendarSyncRepository) GetNeedingSync(ctx context.Context) ([]*e
 	return r.scanCalendarSyncs(rows)
 }
 
+func (r *googleCalendarSyncRepository) GetActiveWebhooks(ctx context.Context) ([]*entities.GoogleCalendarSync, error) {
+	query := `
+		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,
+			   sync_direction, sync_status, last_sync_at, last_sync_error,
+			   sync_token, settings, webhook_channel_id, webhook_url,
+			   webhook_resource_id, webhook_expires_at, created_at, updated_at
+		FROM google_calendar_syncs
+		WHERE webhook_channel_id IS NOT NULL 
+		  AND webhook_channel_id != ''
+		  AND sync_status = 'active'
+		ORDER BY webhook_expires_at ASC`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return r.scanCalendarSyncs(rows)
+}
+
 func (r *googleCalendarSyncRepository) GetActive(ctx context.Context) ([]*entities.GoogleCalendarSync, error) {
 	query := `
 		SELECT id, user_id, google_integration_id, calendar_id, calendar_name,

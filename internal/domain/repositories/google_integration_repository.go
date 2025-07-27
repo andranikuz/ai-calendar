@@ -58,6 +58,9 @@ type GoogleCalendarSyncRepository interface {
 	// Update sync configuration
 	Update(ctx context.Context, sync *entities.GoogleCalendarSync) error
 	
+	// Get all sync configurations with active webhooks
+	GetActiveWebhooks(ctx context.Context) ([]*entities.GoogleCalendarSync, error)
+	
 	// Update sync status
 	UpdateSyncStatus(ctx context.Context, id string, status entities.CalendarSyncStatus, lastSyncAt *time.Time, syncError string) error
 	

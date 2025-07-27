@@ -21,6 +21,7 @@ import (
 	"github.com/andranikuz/smart-goal-calendar/internal/adapters/postgres"
 	appHandlers "github.com/andranikuz/smart-goal-calendar/internal/application/handlers"
 	"github.com/andranikuz/smart-goal-calendar/internal/domain/services"
+	backgroundServices "github.com/andranikuz/smart-goal-calendar/internal/services"
 	httpHandlers "github.com/andranikuz/smart-goal-calendar/internal/ports/http/handlers"
 	"github.com/andranikuz/smart-goal-calendar/internal/ports/http/middleware"
 	"github.com/andranikuz/smart-goal-calendar/internal/ports/http/routes"
@@ -80,6 +81,10 @@ func main() {
 	}
 	
 	zlog.Info().Msg("Database migrations completed successfully")
+
+	// Create application context for graceful shutdown
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
 
 	// Initialize repositories
 	userRepo := postgres.NewUserRepository(db.Pool)
@@ -144,6 +149,20 @@ func main() {
 		googleCalendarSyncRepo,
 		eventRepo,
 	)
+
+	// Initialize webhook renewal service
+	webhookRenewalService := backgroundServices.NewWebhookRenewalService(
+		calendarService,
+		oauth2Service,
+		googleIntegrationRepo,
+		googleCalendarSyncRepo,
+	)
+
+	// Start webhook renewal service
+	webhookRenewalService.Start(appCtx)
+	defer webhookRenewalService.Stop()
+
+	zlog.Info().Msg("Webhook renewal service started")
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
