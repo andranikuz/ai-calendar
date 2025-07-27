@@ -7,9 +7,7 @@ import {
   Space, 
   Button, 
   List, 
-  Badge, 
   Grid,
-  Statistic,
   Empty 
 } from 'antd';
 import { 
@@ -41,7 +39,7 @@ const MobileDashboardPage: React.FC = () => {
   
   const { goals } = useAppSelector(state => state.goals);
   const { events } = useAppSelector(state => state.events);
-  const { todayMood, stats } = useAppSelector(state => state.moods);
+  const { todayMood } = useAppSelector(state => state.moods);
   const { user } = useAppSelector(state => state.auth);
 
   const isMobile = !screens.md;

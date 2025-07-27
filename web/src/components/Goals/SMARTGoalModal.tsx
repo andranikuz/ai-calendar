@@ -32,8 +32,7 @@ import { createGoal, updateGoal } from '../../store/slices/goalsSlice';
 import { Goal } from '../../types/api';
 import { 
   validateSMARTGoal, 
-  getSMARTSuggestions, 
-  getGoalFeedback,
+  getSMARTSuggestions,
   SMARTValidationResult 
 } from '../../utils/smartGoals';
 import dayjs from 'dayjs';

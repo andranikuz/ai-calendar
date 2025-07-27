@@ -261,36 +261,6 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
     }
   };
 
-  const handleCreateTask = () => {
-    setEditingTask(null);
-    setTaskModalVisible(true);
-  };
-
-  const handleEditTask = (task: Task) => {
-    setEditingTask(task);
-    setTaskModalVisible(true);
-  };
-
-  const handleCreateMilestone = () => {
-    setEditingMilestone(null);
-    setMilestoneModalVisible(true);
-  };
-
-  const handleEditMilestone = (milestone: Milestone) => {
-    setEditingMilestone(milestone);
-    setMilestoneModalVisible(true);
-  };
-
-  const handleCompleteTask = async (taskId: string) => {
-    try {
-      // Here you would dispatch to complete task
-      console.log('Completing task:', taskId);
-      message.success('Task completed successfully');
-    } catch (error) {
-      console.error('Failed to complete task:', error);
-      message.error('Failed to complete task');
-    }
-  };
 
   const handleTaskCreate = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
     try {
@@ -337,6 +307,16 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
       console.error('Failed to complete milestone:', error);
       message.error('Failed to complete milestone');
     }
+  };
+
+  const handleCreateMilestone = () => {
+    setEditingMilestone(null);
+    setMilestoneModalVisible(true);
+  };
+
+  const handleEditMilestone = (milestone: Milestone) => {
+    setEditingMilestone(milestone);
+    setMilestoneModalVisible(true);
   };
 
   // Mock data for tasks and milestones - replace with real data from API

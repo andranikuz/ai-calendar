@@ -23,7 +23,6 @@ import {
   UserOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  GoogleOutlined,
   SyncOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
@@ -49,9 +48,7 @@ const LayoutContent: React.FC<LayoutContentProps> = ({ children }) => {
   const screens = useBreakpoint();
   
   const { user } = useAppSelector(state => state.auth);
-  const { integration, isConnected } = useAppSelector(state => state.google);
-  const { events } = useAppSelector(state => state.events);
-  const { goals } = useAppSelector(state => state.goals);
+  const { isConnected } = useAppSelector(state => state.google);
   
   const { showSuccess, showInfo } = useNotifications();
   const { showWelcomeMessage } = useSystemNotifications();
@@ -149,13 +146,6 @@ const LayoutContent: React.FC<LayoutContentProps> = ({ children }) => {
     }
   };
 
-  // Calculate stats for mobile navigation
-  const todayEvents = events.filter(event => {
-    const today = new Date().toDateString();
-    return new Date(event.start_time).toDateString() === today;
-  }).length;
-
-  const pendingGoals = goals.filter(goal => goal.status === 'active').length;
 
   // Mobile Layout
   if (isMobile) {

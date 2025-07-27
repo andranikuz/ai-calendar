@@ -17,14 +17,12 @@ import {
   Row,
   Col,
   Badge,
-  Tooltip,
   message
 } from 'antd';
 import {
   ClockCircleOutlined,
   CalendarOutlined,
   ThunderboltOutlined,
-  CheckCircleOutlined,
   WarningOutlined,
   SettingOutlined,
   PlusOutlined
@@ -37,10 +35,10 @@ import timeScheduler, {
   SchedulingSuggestion,
   SchedulingPreferences
 } from '../../utils/timeScheduler';
-import { Goal, Task, Event } from '../../types/api';
+import { Goal, Task } from '../../types/api';
 import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface TimeSchedulerModalProps {
   visible: boolean;
@@ -93,7 +91,7 @@ const TimeSchedulerModal: React.FC<TimeSchedulerModalProps> = ({
       if (suggestions.length === 0) {
         message.warning('No available time slots found for the next 2 weeks. Try adjusting your preferences.');
       }
-    } catch (error) {
+    } catch {
       message.error('Failed to generate scheduling suggestions');
     }
     setIsGenerating(false);
@@ -125,7 +123,7 @@ const TimeSchedulerModal: React.FC<TimeSchedulerModalProps> = ({
       
       message.success(`Successfully scheduled ${newEvents.length} time slots for your goal`);
       onSuccess();
-    } catch (error) {
+    } catch {
       message.error('Failed to schedule time slots');
     }
     setIsScheduling(false);

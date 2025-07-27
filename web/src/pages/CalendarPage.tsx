@@ -14,12 +14,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { 
   fetchEvents,
-  createEvent,
   updateEvent,
-  deleteEvent,
   moveEvent,
   setCalendarView,
-  setCurrentDate,
   navigateDate
 } from '../store/slices/eventsSlice';
 import { getIntegration, getCalendarSyncs, triggerSync } from '../store/slices/googleSlice';
@@ -32,7 +29,7 @@ const CalendarPage: React.FC = () => {
   const dispatch = useAppDispatch();
   
   const { events, calendarView, currentDate, isLoading } = useAppSelector(state => state.events);
-  const { integration, calendarSyncs, isConnected } = useAppSelector(state => state.google);
+  const { calendarSyncs, isConnected } = useAppSelector(state => state.google);
   
   const [eventModalVisible, setEventModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -130,7 +127,7 @@ const CalendarPage: React.FC = () => {
         })).unwrap();
         message.success('Event moved successfully');
       }
-    } catch (error) {
+    } catch {
       message.error('Failed to move event');
       dropInfo.revert();
     }
@@ -179,7 +176,7 @@ const CalendarPage: React.FC = () => {
         })).unwrap();
         message.success('Event updated successfully');
       }
-    } catch (error) {
+    } catch {
       message.error('Failed to update event');
       resizeInfo.revert();
     }
@@ -197,7 +194,7 @@ const CalendarPage: React.FC = () => {
       }
       message.success('Calendar synchronized successfully');
       dispatch(fetchEvents({})); // Refresh events
-    } catch (error) {
+    } catch {
       message.error('Failed to sync with Google Calendar');
     }
   };

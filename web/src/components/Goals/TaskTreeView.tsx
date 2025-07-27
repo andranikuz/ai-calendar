@@ -13,7 +13,6 @@ import {
   Progress,
   Tag,
   Dropdown,
-  Tooltip,
   Card
 } from 'antd';
 import {
@@ -41,14 +40,6 @@ interface TaskTreeViewProps {
   goalId: string;
 }
 
-interface TaskFormData {
-  title: string;
-  description: string;
-  priority: Task['priority'];
-  status: Task['status'];
-  deadline?: string;
-  estimated_duration?: number;
-}
 
 const TaskTreeView: React.FC<TaskTreeViewProps> = ({
   tasks,
@@ -250,7 +241,7 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
         completed_at: newStatus === 'completed' ? new Date().toISOString() : undefined
       });
       message.success(`Task marked as ${newStatus}`);
-    } catch (error) {
+    } catch {
       message.error('Failed to update task status');
     }
   };
@@ -265,7 +256,7 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
         try {
           await onTaskDelete(taskId);
           message.success('Task deleted successfully');
-        } catch (error) {
+        } catch {
           message.error('Failed to delete task');
         }
       }
@@ -297,7 +288,7 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
 
       setTaskModalVisible(false);
       form.resetFields();
-    } catch (error) {
+    } catch {
       message.error('Failed to save task');
     }
   };

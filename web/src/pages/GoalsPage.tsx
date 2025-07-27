@@ -14,15 +14,12 @@ import {
   Input,
   Select,
   Empty,
-  Statistic,
-  Divider
+  Statistic
 } from 'antd';
 import {
   PlusOutlined,
   FlagOutlined,
   CalendarOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
   MoreOutlined,
   SearchOutlined,
   TrophyOutlined,
@@ -34,8 +31,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { 
   fetchGoals, 
-  setCurrentGoal, 
-  updateGoalProgress,
+  setCurrentGoal,
   deleteGoal 
 } from '../store/slices/goalsSlice';
 import SMARTGoalModal from '../components/Goals/SMARTGoalModal';

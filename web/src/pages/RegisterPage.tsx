@@ -23,7 +23,7 @@ const RegisterPage: React.FC = () => {
     try {
       await dispatch(register(values)).unwrap();
       navigate('/dashboard');
-    } catch (error) {
+    } catch {
       // Error is handled by Redux state
     }
   };

@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
     try {
       await dispatch(login(values)).unwrap();
       navigate('/dashboard');
-    } catch (error) {
+    } catch {
       // Error is handled by Redux state
     }
   };

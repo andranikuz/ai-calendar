@@ -7,7 +7,6 @@ import {
   Space,
   Button,
   Calendar,
-  Badge,
   Statistic,
   Select,
   DatePicker,
@@ -36,15 +35,13 @@ import {
   createMood,
   updateMood,
   getTodayMood,
-  getMoodStats,
-  getMoodsByDateRange
+  getMoodStats
 } from '../store/slices/moodsSlice';
 import { Mood } from '../types/api';
 import dayjs, { Dayjs } from 'dayjs';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-const { RangePicker } = DatePicker;
 
 interface MoodModalProps {
   visible: boolean;
@@ -246,7 +243,7 @@ const MoodsPage: React.FC = () => {
   const [moodModalVisible, setMoodModalVisible] = useState(false);
   const [editingMood, setEditingMood] = useState<Mood | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [calendarValue, setCalendarValue] = useState<Dayjs>(dayjs());
+  const [calendarValue] = useState<Dayjs>(dayjs());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
   useEffect(() => {

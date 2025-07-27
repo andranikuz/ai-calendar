@@ -4,7 +4,6 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Badge,
-  Fab,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
@@ -17,7 +16,6 @@ import {
   Flag as GoalsIcon,
   Mood as MoodIcon,
   Settings as SettingsIcon,
-  Add as AddIcon,
   Event as EventIcon,
   EmojiEvents as GoalIcon,
   SentimentSatisfied as RecordMoodIcon

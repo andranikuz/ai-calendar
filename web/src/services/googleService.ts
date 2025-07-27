@@ -78,7 +78,7 @@ export class GoogleService {
             clearInterval(checkInterval);
             resolve(integration);
           }
-        } catch (error) {
+        } catch {
           // Continue checking
         }
       }, 1000);

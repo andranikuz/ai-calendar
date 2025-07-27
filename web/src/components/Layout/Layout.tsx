@@ -21,7 +21,6 @@ import {
   UserOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  GoogleOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
@@ -39,7 +38,7 @@ const Layout: React.FC = () => {
   const dispatch = useAppDispatch();
   
   const { user } = useAppSelector(state => state.auth);
-  const { integration, isConnected } = useAppSelector(state => state.google);
+  const { isConnected } = useAppSelector(state => state.google);
 
   React.useEffect(() => {
     // Check Google integration status on load
