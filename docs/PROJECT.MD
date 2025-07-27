@@ -1,4 +1,4 @@
-# Smart Goal Calendar - Техническое задание
+# Smart Goal Calendar - Описание проекта
 
 ## Краткое описание проекта
 
