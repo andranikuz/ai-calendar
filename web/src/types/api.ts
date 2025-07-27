@@ -92,6 +92,18 @@ export interface Milestone {
 }
 
 // Event types
+export interface Recurrence {
+  freq: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  interval?: number;
+  count?: number;
+  until?: string;
+  byweekday?: number[];
+  bymonthday?: number[];
+  bymonth?: number[];
+  byhour?: number[];
+  byminute?: number[];
+}
+
 export interface Event {
   id: string;
   user_id: string;
@@ -101,7 +113,7 @@ export interface Event {
   start_time: string;
   end_time: string;
   timezone: string;
-  recurrence?: any;
+  recurrence?: Recurrence;
   location?: string;
   attendees: any[];
   status: 'tentative' | 'confirmed' | 'cancelled';
@@ -119,6 +131,7 @@ export interface CreateEventRequest {
   timezone?: string;
   location?: string;
   goal_id?: string;
+  recurrence?: Recurrence;
 }
 
 // Mood types

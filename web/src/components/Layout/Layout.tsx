@@ -27,6 +27,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/slices/authSlice';
 import { getIntegration } from '../../store/slices/googleSlice';
+import OfflineIndicator from '../Common/OfflineIndicator';
 
 const { Header, Sider, Content } = AntLayout;
 const { Text } = Typography;
@@ -159,6 +160,8 @@ const Layout: React.FC = () => {
           </Space>
           
           <Space>
+            <OfflineIndicator showDetails />
+            
             {isConnected && (
               <Tooltip title="Sync with Google Calendar">
                 <Button

@@ -24,6 +24,7 @@ import {
 } from '../store/slices/eventsSlice';
 import { getIntegration, getCalendarSyncs, triggerSync } from '../store/slices/googleSlice';
 import EventModal from '../components/Calendar/EventModal';
+import { generateEventInstances } from '../utils/rrule';
 import dayjs from 'dayjs';
 
 const CalendarPage: React.FC = () => {
@@ -69,21 +70,66 @@ const CalendarPage: React.FC = () => {
   };
 
   const handleEventClick = (clickInfo: any) => {
-    const event = events.find(e => e.id === clickInfo.event.id);
-    setSelectedEvent(event);
+    const { extendedProps } = clickInfo.event;
+    
+    if (extendedProps.isInstance) {
+      // For recurring instances, edit the original event
+      const originalEvent = extendedProps.originalEvent;
+      setSelectedEvent(originalEvent);
+    } else {
+      // For regular events or the main recurring event
+      const event = events.find(e => e.id === clickInfo.event.id);
+      setSelectedEvent(event);
+    }
+    
     setSelectedDate(null);
     setEventModalVisible(true);
   };
 
   const handleEventDrop = async (dropInfo: any) => {
     const { event } = dropInfo;
+    const { extendedProps } = event;
+    
     try {
-      await dispatch(moveEvent({
-        id: event.id,
-        start: event.start.toISOString(),
-        end: event.end?.toISOString() || event.start.toISOString()
-      })).unwrap();
-      message.success('Event moved successfully');
+      if (extendedProps.isInstance) {
+        // For recurring instances, show a dialog asking how to handle the change
+        Modal.confirm({
+          title: 'Move Recurring Event',
+          content: 'This is a recurring event. How would you like to move it?',
+          okText: 'Move all occurrences',
+          cancelText: 'Move only this occurrence',
+          onOk: async () => {
+            // Move the entire series by updating the original event
+            const originalEvent = extendedProps.originalEvent;
+            const timeDiff = dayjs(event.start).diff(dayjs(originalEvent.start_time));
+            const newStart = dayjs(originalEvent.start_time).add(timeDiff, 'milliseconds');
+            const newEnd = dayjs(originalEvent.end_time).add(timeDiff, 'milliseconds');
+            
+            await dispatch(updateEvent({
+              id: originalEvent.id,
+              data: {
+                start_time: newStart.toISOString(),
+                end_time: newEnd.toISOString()
+              }
+            })).unwrap();
+            message.success('All occurrences moved successfully');
+          },
+          onCancel: () => {
+            // TODO: In a full implementation, this would create an exception
+            // For now, we'll just revert the change
+            message.info('Moving single occurrences is not yet implemented');
+            dropInfo.revert();
+          }
+        });
+      } else {
+        // Handle regular events
+        await dispatch(moveEvent({
+          id: event.id,
+          start: event.start.toISOString(),
+          end: event.end?.toISOString() || event.start.toISOString()
+        })).unwrap();
+        message.success('Event moved successfully');
+      }
     } catch (error) {
       message.error('Failed to move event');
       dropInfo.revert();
@@ -92,15 +138,47 @@ const CalendarPage: React.FC = () => {
 
   const handleEventResize = async (resizeInfo: any) => {
     const { event } = resizeInfo;
+    const { extendedProps } = event;
+    
     try {
-      await dispatch(updateEvent({
-        id: event.id,
-        data: {
-          start_time: event.start.toISOString(),
-          end_time: event.end?.toISOString() || event.start.toISOString()
-        }
-      })).unwrap();
-      message.success('Event updated successfully');
+      if (extendedProps.isInstance) {
+        // For recurring instances, show a dialog
+        Modal.confirm({
+          title: 'Resize Recurring Event',
+          content: 'This is a recurring event. How would you like to resize it?',
+          okText: 'Resize all occurrences',
+          cancelText: 'Resize only this occurrence',
+          onOk: async () => {
+            // Resize the entire series by updating the original event duration
+            const originalEvent = extendedProps.originalEvent;
+            const newDuration = dayjs(event.end).diff(dayjs(event.start));
+            const originalStart = dayjs(originalEvent.start_time);
+            const newEnd = originalStart.add(newDuration, 'milliseconds');
+            
+            await dispatch(updateEvent({
+              id: originalEvent.id,
+              data: {
+                end_time: newEnd.toISOString()
+              }
+            })).unwrap();
+            message.success('All occurrences resized successfully');
+          },
+          onCancel: () => {
+            message.info('Resizing single occurrences is not yet implemented');
+            resizeInfo.revert();
+          }
+        });
+      } else {
+        // Handle regular events
+        await dispatch(updateEvent({
+          id: event.id,
+          data: {
+            start_time: event.start.toISOString(),
+            end_time: event.end?.toISOString() || event.start.toISOString()
+          }
+        })).unwrap();
+        message.success('Event updated successfully');
+      }
     } catch (error) {
       message.error('Failed to update event');
       resizeInfo.revert();
@@ -125,19 +203,74 @@ const CalendarPage: React.FC = () => {
   };
 
   const formatEventsForCalendar = () => {
-    return events.map(event => ({
-      id: event.id,
-      title: event.title,
-      start: event.start_time,
-      end: event.end_time,
-      color: event.goal_id ? '#52c41a' : '#1677ff', // Green for goal-linked events
-      extendedProps: {
-        description: event.description,
-        location: event.location,
-        goalId: event.goal_id,
-        externalSource: event.external_source
+    const calendarApi = calendarRef.current?.getApi();
+    const currentView = calendarApi?.view;
+    
+    // Get the current view date range
+    const viewStart = currentView?.currentStart || dayjs().subtract(1, 'month').toDate();
+    const viewEnd = currentView?.currentEnd || dayjs().add(1, 'month').toDate();
+    
+    const allEvents: any[] = [];
+    
+    events.forEach(event => {
+      // Add the main event
+      allEvents.push({
+        id: event.id,
+        title: event.title,
+        start: event.start_time,
+        end: event.end_time,
+        color: event.goal_id ? '#52c41a' : '#1677ff', // Green for goal-linked events
+        borderColor: event.recurrence ? '#ff4d4f' : undefined, // Red border for recurring events
+        extendedProps: {
+          description: event.description,
+          location: event.location,
+          goalId: event.goal_id,
+          externalSource: event.external_source,
+          isRecurring: !!event.recurrence,
+          originalEvent: event
+        }
+      });
+      
+      // Generate recurring instances if this is a recurring event
+      if (event.recurrence) {
+        try {
+          const instances = generateEventInstances(event, viewStart, viewEnd);
+          instances.forEach((instance, index) => {
+            // Skip the first instance if it's the same as the original event
+            const instanceStart = dayjs(instance.start_time);
+            const originalStart = dayjs(event.start_time);
+            
+            if (index === 0 && instanceStart.isSame(originalStart, 'minute')) {
+              return; // Skip duplicate of original event
+            }
+            
+            allEvents.push({
+              id: `${event.id}_${instance.instanceDate}`,
+              title: `${event.title} (recurring)`,
+              start: instance.start_time,
+              end: instance.end_time,
+              color: event.goal_id ? '#52c41a' : '#1677ff',
+              borderColor: '#ff4d4f', // Red border for recurring instances
+              opacity: 0.8, // Slightly transparent for recurring instances
+              extendedProps: {
+                description: instance.description,
+                location: instance.location,
+                goalId: instance.goal_id,
+                externalSource: instance.external_source,
+                isRecurring: true,
+                isInstance: true,
+                originalEvent: event,
+                instanceDate: instance.instanceDate
+              }
+            });
+          });
+        } catch (error) {
+          console.error('Error generating recurring instances for event:', event.id, error);
+        }
       }
-    }));
+    });
+    
+    return allEvents;
   };
 
   return (
