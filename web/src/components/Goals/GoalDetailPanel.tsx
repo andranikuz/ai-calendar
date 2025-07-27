@@ -29,12 +29,14 @@ import {
   FlagOutlined,
   AimOutlined,
   TrophyOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  ScheduleOutlined
 } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { updateGoalProgress } from '../../store/slices/goalsSlice';
 import { Goal, Task, Milestone } from '../../types/api';
 import TaskTreeView from './TaskTreeView';
+import TimeSchedulerModal from './TimeSchedulerModal';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -211,6 +213,7 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
   
   const [taskModalVisible, setTaskModalVisible] = useState(false);
   const [milestoneModalVisible, setMilestoneModalVisible] = useState(false);
+  const [timeSchedulerVisible, setTimeSchedulerVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
 
@@ -456,6 +459,14 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
       style={{ height: 'fit-content' }}
       actions={[
         <Button
+          key="schedule"
+          type="text"
+          icon={<ScheduleOutlined />}
+          onClick={() => setTimeSchedulerVisible(true)}
+        >
+          Schedule Time
+        </Button>,
+        <Button
           key="edit"
           type="text"
           icon={<EditOutlined />}
@@ -692,6 +703,17 @@ const GoalDetailPanel: React.FC<GoalDetailPanelProps> = ({ goal, onClose, onEdit
           setMilestoneModalVisible(false);
           setEditingMilestone(null);
           // Refresh milestones data
+        }}
+      />
+
+      <TimeSchedulerModal
+        visible={timeSchedulerVisible}
+        goal={goal}
+        tasks={mockTasks}
+        onCancel={() => setTimeSchedulerVisible(false)}
+        onSuccess={() => {
+          setTimeSchedulerVisible(false);
+          // Refresh events data to show scheduled time slots
         }}
       />
     </Card>
