@@ -31,7 +31,8 @@ import {
   DeleteOutlined,
   PlusOutlined,
   CalendarOutlined,
-  SyncOutlined
+  SyncOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { updateUser } from '../store/slices/authSlice';
@@ -44,7 +45,9 @@ import {
   deleteCalendarSync,
   manualSync
 } from '../store/slices/googleSlice';
+import { fetchPendingConflicts } from '../store/slices/syncConflictsSlice';
 import { GoogleCalendar, GoogleCalendarSync } from '../types/api';
+import SyncConflictsModal from '../components/Google/SyncConflictsModal';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -240,6 +243,7 @@ const SettingsPage: React.FC = () => {
 
   const [userForm] = Form.useForm();
   const [calendarSyncModalVisible, setCalendarSyncModalVisible] = useState(false);
+  const [syncConflictsModalVisible, setSyncConflictsModalVisible] = useState(false);
   const [selectedCalendar, setSelectedCalendar] = useState<GoogleCalendar | null>(null);
   const [editingSync, setEditingSync] = useState<GoogleCalendarSync | null>(null);
 
@@ -456,16 +460,24 @@ const SettingsPage: React.FC = () => {
             }
             extra={
               integration?.enabled ? (
-                <Popconfirm
-                  title="Are you sure you want to disconnect Google Calendar?"
-                  onConfirm={handleDisconnectGoogle}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button danger icon={<DisconnectOutlined />}>
-                    Disconnect
+                <Space>
+                  <Button 
+                    icon={<ExclamationCircleOutlined />}
+                    onClick={() => setSyncConflictsModalVisible(true)}
+                  >
+                    View Conflicts
                   </Button>
-                </Popconfirm>
+                  <Popconfirm
+                    title="Are you sure you want to disconnect Google Calendar?"
+                    onConfirm={handleDisconnectGoogle}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button danger icon={<DisconnectOutlined />}>
+                      Disconnect
+                    </Button>
+                  </Popconfirm>
+                </Space>
               ) : (
                 <Button 
                   type="primary" 
@@ -698,6 +710,12 @@ const SettingsPage: React.FC = () => {
           setEditingSync(null);
           // Refresh calendar syncs
         }}
+      />
+
+      {/* Sync Conflicts Modal */}
+      <SyncConflictsModal
+        visible={syncConflictsModalVisible}
+        onCancel={() => setSyncConflictsModalVisible(false)}
       />
     </div>
   );

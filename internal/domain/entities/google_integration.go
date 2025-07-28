@@ -61,12 +61,54 @@ const (
 	SyncStatusDisabled  CalendarSyncStatus = "disabled"
 )
 
+type ConflictResolutionStrategy string
+
+const (
+	ConflictResolutionGoogleWins ConflictResolutionStrategy = "google_wins"
+	ConflictResolutionLocalWins  ConflictResolutionStrategy = "local_wins"
+	ConflictResolutionManual     ConflictResolutionStrategy = "manual"
+)
+
 type CalendarSyncSettings struct {
-	SyncInterval      time.Duration `json:"sync_interval"`       // How often to sync
-	AutoSync          bool          `json:"auto_sync"`           // Enable automatic sync
-	SyncPastEvents    bool          `json:"sync_past_events"`    // Sync events from the past
-	SyncFutureEvents  bool          `json:"sync_future_events"`  // Sync future events
-	ConflictResolution string       `json:"conflict_resolution"` // "google_wins", "local_wins", "manual"
+	SyncInterval       time.Duration              `json:"sync_interval"`        // How often to sync
+	AutoSync           bool                       `json:"auto_sync"`            // Enable automatic sync
+	SyncPastEvents     bool                       `json:"sync_past_events"`     // Sync events from the past
+	SyncFutureEvents   bool                       `json:"sync_future_events"`   // Sync future events
+	ConflictResolution ConflictResolutionStrategy `json:"conflict_resolution"`  // Strategy for handling conflicts
+}
+
+// ConflictType represents the type of synchronization conflict
+type ConflictType string
+
+const (
+	ConflictTypeTimeOverlap    ConflictType = "time_overlap"     // Events overlap in time
+	ConflictTypeContentDiff    ConflictType = "content_diff"     // Same event, different content
+	ConflictTypeDuplicateEvent ConflictType = "duplicate_event"  // Duplicate events found
+	ConflictTypeDeletedEvent   ConflictType = "deleted_event"    // Event deleted in one source
+)
+
+// SyncConflict represents a conflict that occurred during synchronization
+type SyncConflict struct {
+	ID              string        `json:"id"`
+	UserID          UserID        `json:"user_id"`
+	CalendarSyncID  string        `json:"calendar_sync_id"`
+	ConflictType    ConflictType  `json:"conflict_type"`
+	LocalEvent      *Event        `json:"local_event"`
+	GoogleEvent     *Event        `json:"google_event"`
+	Description     string        `json:"description"`
+	Resolution      string        `json:"resolution"`      // How it was resolved
+	ResolvedAt      *time.Time    `json:"resolved_at"`
+	ResolvedBy      string        `json:"resolved_by"`     // "auto" or user ID
+	Status          string        `json:"status"`          // "pending", "resolved", "ignored"
+	CreatedAt       time.Time     `json:"created_at"`
+	UpdatedAt       time.Time     `json:"updated_at"`
+}
+
+// ConflictResolutionAction represents an action to resolve a conflict
+type ConflictResolutionAction struct {
+	Action      string            `json:"action"`       // "use_local", "use_google", "merge", "ignore"
+	EventData   map[string]interface{} `json:"event_data"`   // Event data to use for resolution
+	Resolution  string            `json:"resolution"`   // Human-readable description
 }
 
 // Validation methods
@@ -114,6 +156,6 @@ func DefaultCalendarSyncSettings() CalendarSyncSettings {
 		AutoSync:           true,
 		SyncPastEvents:     false,
 		SyncFutureEvents:   true,
-		ConflictResolution: "google_wins",
+		ConflictResolution: ConflictResolutionGoogleWins,
 	}
 }

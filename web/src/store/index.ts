@@ -4,6 +4,7 @@ import goalsSlice from './slices/goalsSlice';
 import eventsSlice from './slices/eventsSlice';
 import moodsSlice from './slices/moodsSlice';
 import googleSlice from './slices/googleSlice';
+import syncConflictsSlice from './slices/syncConflictsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     events: eventsSlice,
     moods: moodsSlice,
     google: googleSlice,
+    syncConflicts: syncConflictsSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
