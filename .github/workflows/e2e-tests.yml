@@ -1,0 +1,55 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop, claude ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'web/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd web
+        npm ci
+    
+    - name: Install Playwright Browsers
+      run: |
+        cd web
+        npx playwright install --with-deps
+    
+    - name: Build application
+      run: |
+        cd web
+        npm run build
+    
+    - name: Run Playwright tests
+      run: |
+        cd web
+        npm run test:e2e
+    
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: web/playwright-report/
+        retention-days: 30
+    
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: web/test-results/
+        retention-days: 30
