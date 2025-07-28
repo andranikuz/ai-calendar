@@ -29,7 +29,8 @@ import {
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/slices/authSlice';
 import { getIntegration } from '../../store/slices/googleSlice';
-import { NotificationProvider, useNotifications, useSystemNotifications } from '../Common/NotificationProvider';
+import { NotificationProvider } from '../Common/NotificationProvider';
+import { useNotifications, useSystemNotifications } from '../../hooks/useNotifications';
 
 const { Header, Sider, Content } = AntLayout;
 const { Text } = Typography;

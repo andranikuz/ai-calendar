@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -394,6 +395,28 @@ func (h *GoogleCalendarSyncHandler) syncFromGoogle(ctx context.Context, sync *en
 	return syncedCount, nil
 }
 
+// hasConflictForEvent checks if there's a conflict for a specific Google event
+func (h *GoogleCalendarSyncHandler) hasConflictForEvent(conflicts []*entities.SyncConflict, googleEventID string) bool {
+	for _, conflict := range conflicts {
+		if conflict.GoogleEvent != nil && conflict.GoogleEvent.ID == googleEventID {
+			return true
+		}
+	}
+	return false
+}
+
+// logSyncConflicts logs information about detected conflicts
+func (h *GoogleCalendarSyncHandler) logSyncConflicts(syncID string, syncResult *google.SyncResult) {
+	fmt.Printf("Calendar sync %s detected %d conflicts:\n", syncID, len(syncResult.DetectedConflicts))
+	for _, conflict := range syncResult.DetectedConflicts {
+		fmt.Printf("  - Type: %s, ID: %s, Description: %s\n", 
+			conflict.ConflictType, conflict.ID, conflict.Description)
+	}
+	if syncResult.ResolvedConflicts > 0 {
+		fmt.Printf("  Automatically resolved: %d conflicts\n", syncResult.ResolvedConflicts)
+	}
+}
+
 // syncToGoogle syncs events from local database to Google Calendar
 func (h *GoogleCalendarSyncHandler) syncToGoogle(ctx context.Context, sync *entities.GoogleCalendarSync, integration *entities.GoogleIntegration) (int, error) {
 	// Get local events that need to be synced
@@ -450,4 +473,105 @@ func (h *GoogleCalendarSyncHandler) toSyncConfigResponse(sync *entities.GoogleCa
 		CreatedAt:     sync.CreatedAt,
 		UpdatedAt:     sync.UpdatedAt,
 	}
+}
+
+// SyncWithConflictDetection performs sync with conflict detection and returns detailed results
+func (h *GoogleCalendarSyncHandler) SyncWithConflictDetection(c *gin.Context) {
+	userID, exists := middleware.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	syncID := c.Param("id")
+	if syncID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Sync ID is required"})
+		return
+	}
+
+	// Get sync configuration
+	sync, err := h.googleCalendarSyncRepo.GetByID(c.Request.Context(), syncID)
+	if err != nil || sync == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Calendar sync configuration not found"})
+		return
+	}
+
+	// Verify ownership
+	if sync.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to sync this calendar"})
+		return
+	}
+
+	// Get Google integration
+	integration, err := h.googleIntegrationRepo.GetByID(c.Request.Context(), sync.GoogleIntegrationID)
+	if err != nil || integration == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get Google integration"})
+		return
+	}
+
+	// Check if token needs refresh
+	if integration.IsTokenExpiringSoon() {
+		newTokens, err := h.oauth2Service.RefreshToken(c.Request.Context(), integration.RefreshToken)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to refresh Google token"})
+			return
+		}
+
+		// Update tokens in database
+		if err := h.googleIntegrationRepo.UpdateTokens(c.Request.Context(), integration.ID,
+			newTokens.AccessToken, newTokens.RefreshToken, newTokens.Expiry); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tokens"})
+			return
+		}
+
+		integration.AccessToken = newTokens.AccessToken
+	}
+
+	// Get existing local events for conflict detection
+	localEvents, err := h.eventRepo.GetByUserID(c.Request.Context(), sync.UserID, time.Now().AddDate(0, -1, 0), time.Now().AddDate(0, 3, 0))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get local events"})
+		return
+	}
+
+	// Determine conflict resolution strategy from sync settings
+	var resolutionStrategy entities.ConflictResolutionStrategy
+	switch sync.Settings.ConflictResolution {
+	case "google_wins":
+		resolutionStrategy = entities.ConflictResolutionGoogleWins
+	case "local_wins":
+		resolutionStrategy = entities.ConflictResolutionLocalWins
+	default:
+		resolutionStrategy = entities.ConflictResolutionManual
+	}
+
+	// Perform sync with conflict detection
+	syncResult, err := h.calendarService.SyncEventsWithConflictDetection(
+		c.Request.Context(), 
+		integration.AccessToken, 
+		sync.CalendarID, 
+		sync.ID, 
+		localEvents, 
+		resolutionStrategy,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to sync events with conflict detection"})
+		return
+	}
+
+	// Update last sync time
+	if err := h.googleCalendarSyncRepo.UpdateLastSync(c.Request.Context(), sync.ID, time.Now()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update last sync time"})
+		return
+	}
+
+	// Return detailed sync result
+	c.JSON(http.StatusOK, gin.H{
+		"message":            "Sync completed",
+		"synced_events":      len(syncResult.GoogleEvents),
+		"detected_conflicts": len(syncResult.DetectedConflicts),
+		"resolved_conflicts": syncResult.ResolvedConflicts,
+		"sync_status":        syncResult.SyncStatus,
+		"conflicts":          syncResult.DetectedConflicts,
+	})
 }

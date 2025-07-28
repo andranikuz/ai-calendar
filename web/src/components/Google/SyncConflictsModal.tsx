@@ -10,7 +10,6 @@ import {
   Alert,
   Divider,
   Checkbox,
-  Tooltip,
   Badge,
   Row,
   Col,
@@ -20,12 +19,9 @@ import {
 } from '../../utils/antd';
 import {
   ExclamationCircleOutlined,
-  CheckCircleOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
-  CalendarOutlined,
   ClockCircleOutlined,
-  MergeOutlined,
   GoogleOutlined,
   DesktopOutlined
 } from '@ant-design/icons';
@@ -40,7 +36,7 @@ import {
 } from '../../store/slices/syncConflictsSlice';
 import dayjs from 'dayjs';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface SyncConflictsModalProps {
   visible: boolean;
@@ -55,7 +51,6 @@ const SyncConflictsModal: React.FC<SyncConflictsModalProps> = ({
   const { conflicts, isLoading, error, resolving } = useAppSelector(state => state.syncConflicts);
   
   const [selectedConflicts, setSelectedConflicts] = useState<string[]>([]);
-  const [showResolved, setShowResolved] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -74,7 +69,7 @@ const SyncConflictsModal: React.FC<SyncConflictsModalProps> = ({
     try {
       await dispatch(resolveConflict({ conflictId, action })).unwrap();
       message.success('Конфликт успешно разрешен');
-    } catch (error) {
+    } catch {
       message.error('Не удалось разрешить конфликт');
     }
   };
@@ -100,7 +95,7 @@ const SyncConflictsModal: React.FC<SyncConflictsModalProps> = ({
       
       message.success(`Разрешено ${selectedConflicts.length} конфликтов`);
       setSelectedConflicts([]);
-    } catch (error) {
+    } catch {
       message.error('Не удалось разрешить конфликты');
     }
   };
@@ -249,7 +244,7 @@ const SyncConflictsModal: React.FC<SyncConflictsModalProps> = ({
   };
 
   const filteredConflicts = conflicts.filter(conflict => 
-    showResolved || conflict.status === 'pending'
+    conflict.status === 'pending'
   );
 
   return (

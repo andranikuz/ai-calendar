@@ -24,7 +24,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchGoals } from '../store/slices/goalsSlice';
 import { fetchEvents } from '../store/slices/eventsSlice';
 import { getTodayMood, getMoodStats } from '../store/slices/moodsSlice';
-import { useNotifications } from '../components/Common/NotificationProvider';
+import { useNotifications } from '../hooks/useNotifications';
 import MobileCard from '../components/Common/MobileCard';
 import dayjs from 'dayjs';
 

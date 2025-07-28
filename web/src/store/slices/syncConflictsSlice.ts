@@ -64,7 +64,7 @@ export const fetchPendingConflicts = createAsyncThunk(
         count: number;
       }>('/sync-conflicts');
       return response.conflicts;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to fetch pending conflicts');
     }
   }
@@ -76,7 +76,7 @@ export const fetchConflictStats = createAsyncThunk(
     try {
       const response = await apiService.get<ConflictStats>(`/sync-conflicts/stats?days=${days}`);
       return response;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to fetch conflict statistics');
     }
   }
@@ -91,7 +91,7 @@ export const resolveConflict = createAsyncThunk(
     try {
       await apiService.post(`/sync-conflicts/${conflictId}/resolve`, action);
       return conflictId;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to resolve conflict');
     }
   }
@@ -122,7 +122,7 @@ export const bulkResolveConflicts = createAsyncThunk(
         resolution,
       });
       return { conflictIds, response };
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to bulk resolve conflicts');
     }
   }

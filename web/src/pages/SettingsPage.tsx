@@ -43,9 +43,9 @@ import {
   createCalendarSync,
   updateCalendarSync,
   deleteCalendarSync,
-  manualSync
+  manualSync,
+  syncWithConflicts
 } from '../store/slices/googleSlice';
-import { fetchPendingConflicts } from '../store/slices/syncConflictsSlice';
 import { GoogleCalendar, GoogleCalendarSync } from '../types/api';
 import SyncConflictsModal from '../components/Google/SyncConflictsModal';
 import dayjs from 'dayjs';
@@ -315,11 +315,30 @@ const SettingsPage: React.FC = () => {
 
   const handleManualSync = async (syncId: string) => {
     try {
-      await dispatch(manualSync(syncId)).unwrap();
-      message.success('Manual sync completed successfully');
+      const result = await dispatch(manualSync(syncId)).unwrap();
+      message.success(`Manual sync completed successfully. Synced ${result.result.synced_count} events.`);
     } catch (error) {
       console.error('Failed to manual sync:', error);
       message.error('Failed to perform manual sync');
+    }
+  };
+
+  const handleSyncWithConflicts = async (syncId: string) => {
+    try {
+      const result = await dispatch(syncWithConflicts(syncId)).unwrap();
+      const { synced_events, detected_conflicts, resolved_conflicts } = result.result;
+      
+      if (detected_conflicts > 0) {
+        message.warning(
+          `Sync completed with ${detected_conflicts} conflicts detected. ${resolved_conflicts} were auto-resolved.`
+        );
+        setSyncConflictsModalVisible(true);
+      } else {
+        message.success(`Sync completed successfully. Synced ${synced_events} events without conflicts.`);
+      }
+    } catch (error) {
+      console.error('Failed to sync with conflict detection:', error);
+      message.error('Failed to perform sync with conflict detection');
     }
   };
 
@@ -518,6 +537,14 @@ const SettingsPage: React.FC = () => {
                                   loading={isLoading}
                                 >
                                   Sync Now
+                                </Button>
+                                <Button
+                                  type="text"
+                                  icon={<ExclamationCircleOutlined />}
+                                  onClick={() => handleSyncWithConflicts(existingSync.id)}
+                                  loading={isLoading}
+                                >
+                                  Sync & Check Conflicts
                                 </Button>
                                 <Button
                                   type="text"

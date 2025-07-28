@@ -22,4 +22,5 @@ func SetupGoogleCalendarSyncRoutes(
 	
 	// Sync action endpoints
 	syncGroup.POST("/:id/sync", googleCalendarSyncHandler.SyncNow)
+	syncGroup.POST("/:id/sync-with-conflicts", googleCalendarSyncHandler.SyncWithConflictDetection)
 }

@@ -153,12 +153,26 @@ export const triggerSync = createAsyncThunk(
   }
 );
 
+export const triggerSyncWithConflictDetection = createAsyncThunk(
+  'google/triggerSyncWithConflictDetection',
+  async (syncId: string, { rejectWithValue }) => {
+    try {
+      const result = await googleService.triggerSyncWithConflictDetection(syncId);
+      return { syncId, result };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to trigger sync with conflict detection';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Aliases for better naming in components
 export const fetchGoogleIntegration = getIntegration;
 export const disconnectGoogle = disconnect;
 export const fetchGoogleCalendars = getCalendars;
 export const fetchCalendarSyncs = getCalendarSyncs;
 export const manualSync = triggerSync;
+export const syncWithConflicts = triggerSyncWithConflictDetection;
 
 const googleSlice = createSlice({
   name: 'google',

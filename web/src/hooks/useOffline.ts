@@ -38,48 +38,6 @@ export const useOffline = (): OfflineHookReturn => {
     moods: [] as Array<Record<string, unknown>>
   });
 
-  // Track online/offline status
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      // Auto-sync when coming back online
-      syncPendingActions();
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [syncPendingActions]);
-
-  // Load pending actions and offline data on mount
-  useEffect(() => {
-    loadPendingActions();
-    refreshOfflineData();
-  }, [loadPendingActions, refreshOfflineData]);
-
-  // Listen for service worker messages
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'OFFLINE_ACTION_ADDED') {
-          loadPendingActions();
-        }
-        if (event.data.type === 'SYNC_COMPLETED') {
-          loadPendingActions();
-          refreshOfflineData();
-        }
-      });
-    }
-  }, [loadPendingActions, refreshOfflineData]);
-
   const loadPendingActions = useCallback(async () => {
     try {
       const actions = await indexedDBManager.getPendingActions();
@@ -104,37 +62,6 @@ export const useOffline = (): OfflineHookReturn => {
       console.error('Failed to refresh offline data:', error);
     }
   }, []);
-
-  const addOfflineAction = async (action: Omit<OfflineAction, 'id' | 'created_at' | 'retry_count'>) => {
-    try {
-      await indexedDBManager.addPendingAction({
-        type: action.type,
-        store: action.store,
-        data: action.data,
-        url: action.url,
-        method: action.method
-      });
-      
-      // Reload pending actions
-      await loadPendingActions();
-      
-      // Try to register background sync
-      if ('serviceWorker' in navigator) {
-        try {
-          const registration = await navigator.serviceWorker.ready;
-          if ('sync' in registration) {
-            const syncRegistration = registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } };
-            await syncRegistration.sync.register('sync-data');
-          }
-        } catch (error) {
-          console.log('Background sync not supported:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to add offline action:', error);
-      throw error;
-    }
-  };
 
   const syncPendingActions = useCallback(async () => {
     if (!isOnline || syncStatus === 'syncing') return;
@@ -201,6 +128,79 @@ export const useOffline = (): OfflineHookReturn => {
       setTimeout(() => setSyncStatus('idle'), 5000);
     }
   }, [isOnline, syncStatus, loadPendingActions, refreshOfflineData]);
+
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-sync when coming back online
+      syncPendingActions();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [syncPendingActions]);
+
+  // Load pending actions and offline data on mount
+  useEffect(() => {
+    loadPendingActions();
+    refreshOfflineData();
+  }, [loadPendingActions, refreshOfflineData]);
+
+  // Listen for service worker messages
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data.type === 'OFFLINE_ACTION_ADDED') {
+          loadPendingActions();
+        }
+        if (event.data.type === 'SYNC_COMPLETED') {
+          loadPendingActions();
+          refreshOfflineData();
+        }
+      });
+    }
+  }, [loadPendingActions, refreshOfflineData]);
+
+  const addOfflineAction = async (action: Omit<OfflineAction, 'id' | 'created_at' | 'retry_count'>) => {
+    try {
+      await indexedDBManager.addPendingAction({
+        type: action.type,
+        store: action.store,
+        data: action.data,
+        url: action.url,
+        method: action.method
+      });
+      
+      // Reload pending actions
+      await loadPendingActions();
+      
+      // Try to register background sync
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          if ('sync' in registration) {
+            const syncRegistration = registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } };
+            await syncRegistration.sync.register('sync-data');
+          }
+        } catch (error) {
+          console.log('Background sync not supported:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to add offline action:', error);
+      throw error;
+    }
+  };
 
   const updateOfflineData = async (store: string, data: Record<string, unknown>) => {
     try {

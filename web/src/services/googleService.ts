@@ -54,6 +54,37 @@ export class GoogleService {
     return await apiService.post(`/google/calendar-syncs/${syncId}/sync`);
   }
 
+  async triggerSyncWithConflictDetection(syncId: string): Promise<{
+    message: string;
+    synced_events: number;
+    detected_conflicts: number;
+    resolved_conflicts: number;
+    sync_status: string;
+    conflicts: Array<{
+      id: string;
+      conflict_type: string;
+      description: string;
+      local_event?: {
+        id: string;
+        title: string;
+        description?: string;
+        location?: string;
+        start_time: string;
+        end_time: string;
+      };
+      google_event?: {
+        id: string;
+        title: string;
+        description?: string;
+        location?: string;
+        start_time: string;
+        end_time: string;
+      };
+    }>;
+  }> {
+    return await apiService.post(`/google/calendar-syncs/${syncId}/sync-with-conflicts`);
+  }
+
   // Helper methods
   async isConnected(): Promise<boolean> {
     try {

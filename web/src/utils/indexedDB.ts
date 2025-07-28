@@ -254,7 +254,8 @@ export class IndexedDBManager {
   }
 
   async getSyncMetadata(store: string): Promise<{ lastSync: string; version: number } | null> {
-    return this.get('syncMetadata', store);
+    const result = await this.get('syncMetadata', store) as { lastSync: string; version: number } | undefined;
+    return result || null;
   }
 
   // Bulk operations for sync

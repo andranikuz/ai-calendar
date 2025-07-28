@@ -8,15 +8,18 @@ import (
 	"google.golang.org/api/calendar/v3"
 
 	"github.com/andranikuz/smart-goal-calendar/internal/domain/entities"
+	"github.com/andranikuz/smart-goal-calendar/internal/domain/services"
 )
 
 type CalendarService struct {
-	oauth2Service *OAuth2Service
+	oauth2Service     *OAuth2Service
+	conflictService   *services.SyncConflictService
 }
 
-func NewCalendarService(oauth2Service *OAuth2Service) *CalendarService {
+func NewCalendarService(oauth2Service *OAuth2Service, conflictService *services.SyncConflictService) *CalendarService {
 	return &CalendarService{
-		oauth2Service: oauth2Service,
+		oauth2Service:   oauth2Service,
+		conflictService: conflictService,
 	}
 }
 
@@ -190,19 +193,91 @@ func (s *CalendarService) DeleteEvent(ctx context.Context, accessToken, calendar
 }
 
 func (s *CalendarService) SyncEvents(ctx context.Context, accessToken, calendarID string, localEvents []*entities.Event) ([]*GoogleCalendarEvent, error) {
+	result, err := s.SyncEventsWithConflictDetection(ctx, accessToken, calendarID, "", localEvents, entities.ConflictResolutionManual)
+	if err != nil {
+		return nil, err
+	}
+	return result.GoogleEvents, nil
+}
+
+// SyncEventsWithConflictDetection performs intelligent sync with conflict detection and resolution
+func (s *CalendarService) SyncEventsWithConflictDetection(
+	ctx context.Context, 
+	accessToken, 
+	calendarID, 
+	calendarSyncID string, 
+	localEvents []*entities.Event,
+	resolutionStrategy entities.ConflictResolutionStrategy,
+) (*SyncResult, error) {
 	// Get events from Google Calendar
 	now := time.Now()
 	pastMonth := now.AddDate(0, -1, 0)
 	futureMonth := now.AddDate(0, 1, 0)
 
-	googleEvents, err := s.GetEvents(ctx, accessToken, calendarID, pastMonth, futureMonth)
+	googleCalendarEvents, err := s.GetEvents(ctx, accessToken, calendarID, pastMonth, futureMonth)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Google events: %w", err)
 	}
 
-	// TODO: Implement intelligent sync logic
-	// For now, just return Google events
-	return googleEvents, nil
+	// Convert Google Calendar events to domain entities for conflict detection
+	googleEvents := make([]*entities.Event, 0, len(googleCalendarEvents))
+	for _, gEvent := range googleCalendarEvents {
+		event := &entities.Event{
+			ID:          gEvent.ID,
+			Title:       gEvent.Summary,
+			Description: gEvent.Description,
+			Location:    gEvent.Location,
+			StartTime:   gEvent.StartTime,
+			EndTime:     gEvent.EndTime,
+		}
+		googleEventID := gEvent.ID
+		event.GoogleEventID = &googleEventID
+		googleEvents = append(googleEvents, event)
+	}
+
+	// Extract user ID from the first local event (assuming all events belong to the same user)
+	var userID entities.UserID
+	if len(localEvents) > 0 {
+		userID = localEvents[0].UserID
+	}
+
+	// Detect conflicts if conflict service is available
+	var detectedConflicts []*entities.SyncConflict
+	resolvedCount := 0
+	
+	if s.conflictService != nil && userID != "" {
+		conflicts, err := s.conflictService.DetectConflicts(ctx, userID, calendarSyncID, localEvents, googleEvents)
+		if err != nil {
+			return nil, fmt.Errorf("failed to detect conflicts: %w", err)
+		}
+		detectedConflicts = conflicts
+
+		// Auto-resolve conflicts if strategy is not manual
+		if resolutionStrategy != entities.ConflictResolutionManual && len(conflicts) > 0 {
+			err = s.conflictService.AutoResolveConflicts(ctx, conflicts, resolutionStrategy)
+			if err != nil {
+				return nil, fmt.Errorf("failed to auto-resolve conflicts: %w", err)
+			}
+			resolvedCount = len(conflicts)
+		}
+	}
+
+	// Determine sync status
+	syncStatus := "success"
+	if len(detectedConflicts) > 0 {
+		if resolvedCount == len(detectedConflicts) {
+			syncStatus = "success_with_resolved_conflicts"
+		} else {
+			syncStatus = "conflicts_detected"
+		}
+	}
+
+	return &SyncResult{
+		GoogleEvents:      googleCalendarEvents,
+		DetectedConflicts: detectedConflicts,
+		ResolvedConflicts: resolvedCount,
+		SyncStatus:        syncStatus,
+	}, nil
 }
 
 func (s *CalendarService) convertCalendarEvent(event *calendar.Event, calendarID string) *GoogleCalendarEvent {
@@ -264,6 +339,13 @@ type WebhookResult struct {
 	ChannelID   string    `json:"channel_id"`
 	ResourceID  string    `json:"resource_id"`
 	ExpiresAt   time.Time `json:"expires_at"`
+}
+
+type SyncResult struct {
+	GoogleEvents      []*GoogleCalendarEvent   `json:"google_events"`
+	DetectedConflicts []*entities.SyncConflict `json:"detected_conflicts"`
+	ResolvedConflicts int                      `json:"resolved_conflicts"`
+	SyncStatus        string                   `json:"sync_status"`
 }
 
 // SetupWebhook sets up a webhook for a Google Calendar

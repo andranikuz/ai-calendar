@@ -66,28 +66,42 @@ const TaskTreeView: React.FC<TaskTreeViewProps> = ({
 
   // Build tree structure from flat task list
   const buildTaskTree = (tasks: Task[]): TreeNodeData[] => {
-    const taskMap = new Map<string, TaskNode>();
+    const taskNodeMap = new Map<string, TaskNode>();
+    const treeNodeMap = new Map<string, TreeNodeData>();
     const rootTasks: TreeNodeData[] = [];
 
-    // Create task map
+    // Create task node map
     tasks.forEach(task => {
-      taskMap.set(task.id, { ...task, children: [] });
+      taskNodeMap.set(task.id, { ...task, children: [] });
     });
 
-    // Build tree structure
+    // Build TaskNode hierarchy first
     tasks.forEach(task => {
-      const taskNode = taskMap.get(task.id)!;
-      const treeNode = {
+      const taskNode = taskNodeMap.get(task.id)!;
+      if (task.parent_task_id && taskNodeMap.has(task.parent_task_id)) {
+        const parent = taskNodeMap.get(task.parent_task_id)!;
+        parent.children.push(taskNode);
+      }
+    });
+
+    // Create TreeNodeData structure
+    tasks.forEach(task => {
+      const taskNode = taskNodeMap.get(task.id)!;
+      const treeNode: TreeNodeData = {
         key: task.id,
         title: renderTaskNode(taskNode),
         children: [],
         task: taskNode
       };
+      treeNodeMap.set(task.id, treeNode);
+    });
 
-      if (task.parent_task_id && taskMap.has(task.parent_task_id)) {
-        const parent = taskMap.get(task.parent_task_id)!;
-        if (!parent.children) parent.children = [];
-        parent.children.push(treeNode);
+    // Build TreeNodeData hierarchy
+    tasks.forEach(task => {
+      const treeNode = treeNodeMap.get(task.id)!;
+      if (task.parent_task_id && treeNodeMap.has(task.parent_task_id)) {
+        const parentTreeNode = treeNodeMap.get(task.parent_task_id)!;
+        parentTreeNode.children.push(treeNode);
       } else {
         rootTasks.push(treeNode);
       }

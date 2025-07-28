@@ -11,6 +11,8 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { EventClickArg, EventDropArg, DateSelectArg } from '@fullcalendar/core';
+import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { 
   fetchEvents,
@@ -22,7 +24,23 @@ import {
 import { getIntegration, getCalendarSyncs, triggerSync } from '../store/slices/googleSlice';
 import EventModal from '../components/Calendar/EventModal';
 import { generateEventInstances } from '../utils/rrule';
+import { Event } from '../types/api';
 import dayjs from 'dayjs';
+
+// Type alias for calendar usage
+type CalendarEvent = Event;
+
+// Extended type for FullCalendar events
+interface FullCalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  color: string;
+  borderColor?: string;
+  opacity?: number;
+  extendedProps: Record<string, unknown>;
+}
 
 const CalendarPage: React.FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
@@ -60,30 +78,30 @@ const CalendarPage: React.FC = () => {
     dispatch(navigateDate(direction));
   };
 
-  const handleDateSelect = (selectInfo: { startStr: string; endStr: string }) => {
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
     setSelectedDate(selectInfo.startStr);
     setSelectedEvent(null);
     setEventModalVisible(true);
   };
 
-  const handleEventClick = (clickInfo: { event: { extendedProps: Record<string, unknown> } }) => {
+  const handleEventClick = (clickInfo: EventClickArg) => {
     const { extendedProps } = clickInfo.event;
     
     if (extendedProps.isInstance) {
       // For recurring instances, edit the original event
-      const originalEvent = extendedProps.originalEvent;
+      const originalEvent = extendedProps.originalEvent as CalendarEvent;
       setSelectedEvent(originalEvent);
     } else {
       // For regular events or the main recurring event
       const event = events.find(e => e.id === clickInfo.event.id);
-      setSelectedEvent(event);
+      setSelectedEvent(event || null);
     }
     
     setSelectedDate(null);
     setEventModalVisible(true);
   };
 
-  const handleEventDrop = async (dropInfo: { event: { extendedProps: Record<string, unknown>; id: string; start: Date; end: Date | null } }) => {
+  const handleEventDrop = async (dropInfo: EventDropArg) => {
     const { event } = dropInfo;
     const { extendedProps } = event;
     
@@ -97,7 +115,7 @@ const CalendarPage: React.FC = () => {
           cancelText: 'Move only this occurrence',
           onOk: async () => {
             // Move the entire series by updating the original event
-            const originalEvent = extendedProps.originalEvent;
+            const originalEvent = extendedProps.originalEvent as CalendarEvent;
             const timeDiff = dayjs(event.start).diff(dayjs(originalEvent.start_time));
             const newStart = dayjs(originalEvent.start_time).add(timeDiff, 'milliseconds');
             const newEnd = dayjs(originalEvent.end_time).add(timeDiff, 'milliseconds');
@@ -122,8 +140,8 @@ const CalendarPage: React.FC = () => {
         // Handle regular events
         await dispatch(moveEvent({
           id: event.id,
-          start: event.start.toISOString(),
-          end: event.end?.toISOString() || event.start.toISOString()
+          start: event.start!.toISOString(),
+          end: event.end?.toISOString() || event.start!.toISOString()
         })).unwrap();
         message.success('Event moved successfully');
       }
@@ -133,7 +151,7 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const handleEventResize = async (resizeInfo: { event: { extendedProps: Record<string, unknown>; id: string; start: Date; end: Date | null }; revert: () => void }) => {
+  const handleEventResize = async (resizeInfo: EventResizeDoneArg) => {
     const { event } = resizeInfo;
     const { extendedProps } = event;
     
@@ -147,7 +165,7 @@ const CalendarPage: React.FC = () => {
           cancelText: 'Resize only this occurrence',
           onOk: async () => {
             // Resize the entire series by updating the original event duration
-            const originalEvent = extendedProps.originalEvent;
+            const originalEvent = extendedProps.originalEvent as CalendarEvent;
             const newDuration = dayjs(event.end).diff(dayjs(event.start));
             const originalStart = dayjs(originalEvent.start_time);
             const newEnd = originalStart.add(newDuration, 'milliseconds');
@@ -170,8 +188,8 @@ const CalendarPage: React.FC = () => {
         await dispatch(updateEvent({
           id: event.id,
           data: {
-            start_time: event.start.toISOString(),
-            end_time: event.end?.toISOString() || event.start.toISOString()
+            start_time: event.start!.toISOString(),
+            end_time: event.end?.toISOString() || event.start!.toISOString()
           }
         })).unwrap();
         message.success('Event updated successfully');
@@ -199,7 +217,7 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const formatEventsForCalendar = () => {
+  const formatEventsForCalendar = (): FullCalendarEvent[] => {
     const calendarApi = calendarRef.current?.getApi();
     const currentView = calendarApi?.view;
     
@@ -207,14 +225,7 @@ const CalendarPage: React.FC = () => {
     const viewStart = currentView?.currentStart || dayjs().subtract(1, 'month').toDate();
     const viewEnd = currentView?.currentEnd || dayjs().add(1, 'month').toDate();
     
-    const allEvents: Array<{
-      id: string;
-      title: string;
-      start: string;
-      end: string;
-      color: string;
-      extendedProps: Record<string, unknown>;
-    }> = [];
+    const allEvents: FullCalendarEvent[] = [];
     
     events.forEach(event => {
       // Add the main event
