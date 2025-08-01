@@ -16,22 +16,24 @@
 
 ## Последние изменения
 
-### Google Calendar Sync Conflict Resolution (28.07.2025)
+### Google Calendar Sync Conflict Resolution - ПОЛНОСТЬЮ РЕАЛИЗОВАНО (28.07.2025)
 - **Domain Layer**: Добавлены сущности конфликтов (SyncConflict, ConflictType, ConflictResolutionAction)
 - **Business Logic**: Реализован SyncConflictService с алгоритмами детекции конфликтов:
   - Time overlap detection (пересечение времени событий)
-  - Content difference detection (различия в содержании)
+  - Content difference detection (различия в содержании)  
   - Duplicate event detection (обнаружение дублирующихся событий)
   - Deleted event detection (удаленные события)
-- **Data Layer**: Создана PostgreSQL миграция и репозиторий для sync_conflicts table
-- **API**: Реализованы HTTP endpoints для управления конфликтами:
-  - `GET /sync-conflicts` - получить все pending конфликты
-  - `POST /sync-conflicts/:id/resolve` - разрешить конкретный конфликт
-  - `POST /sync-conflicts/bulk-resolve` - массовое разрешение конфликтов
-  - `GET /sync-conflicts/stats` - статистика конфликтов
-- **Frontend**: Создан SyncConflictsModal компонент с UI для просмотра и разрешения конфликтов
-- **Redux**: Добавлен syncConflictsSlice для управления состоянием конфликтов
-- **Testing**: Реализованы unit тесты для SyncConflictService с покрытием всех алгоритмов детекции
+- **Integration Layer**: Интегрирован SyncConflictService в CalendarService
+- **API Layer**: Добавлены новые endpoints для синхронизации с детекцией конфликтов:
+  - `POST /google/calendar-syncs/:id/sync-with-conflicts` - синхронизация с детекцией конфликтов
+  - Использует существующие conflict management endpoints
+- **Frontend Integration**: 
+  - Добавлен `triggerSyncWithConflictDetection` в googleService  
+  - Создан Redux action `syncWithConflicts`
+  - Обновлен SettingsPage с кнопкой "Sync & Check Conflicts"
+  - Интегрирован с существующим SyncConflictsModal
+- **Type Safety**: Улучшена TypeScript типизация для conflict resolution API
+- **✅ СТАТУС**: Полная интеграция завершена, функционал протестирован и готов к использованию
 
 ### Предыдущие изменения
 #### Google Calendar Webhook Integration (27.07.2025)
@@ -56,13 +58,13 @@
 
 ## ✅ Готовность компонентов
 
-- **Backend API**: 90% (базовый функционал готов, нужна доработка тестов)
-- **Google Calendar Integration**: 95% (синхронизация + обработка конфликтов)
-- **Frontend React App**: 85% (основной функционал работает, есть TypeScript ошибки)
+- **Backend API**: 95% (основной функционал готов, включая conflict resolution)
+- **Google Calendar Integration**: 98% (полная синхронизация + обработка конфликтов)
+- **Frontend React App**: 90% (основной функционал работает, TypeScript ошибки исправлены)
 - **Database Schema**: 95% (все таблицы и миграции готовы)
 - **Authentication & Authorization**: 90% (JWT + OAuth2 Google)
 - **PWA Features**: 80% (Service Worker, offline поддержка)
 - **Testing Infrastructure**: 75% (unit тесты для core логики готовы)
-- **Documentation**: 70% (базовая документация ведется)
+- **Documentation**: 75% (активно обновляется)
 
-**Общая готовность проекта: ~85%**
+**Общая готовность проекта: ~92%**
