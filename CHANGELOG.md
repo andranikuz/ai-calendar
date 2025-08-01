@@ -15,14 +15,14 @@
   - Бизнес-возможности (Corporate Wellness, Coaching Marketplace, Educational Licensing)
 
 ### Изменения в системе:
-- **10 приоритизированных идей** с technical specifications и implementation roadmap
-- **Q1-Q4 2025 roadmap** с фокусом на Voice Interface → Health Integration → AI Analytics
-- **Бизнес-стратегия** с потенциалом $500K ARR к Q4 2025
+- **25 детализированных идей** с technical specifications и ROI analysis
+- **Q1-Q4 2025 roadmap** с фокусом на Voice Interface → Health Integration → AI Analytics → Enterprise
+- **Бизнес-стратегия** с потенциалом $500K ARR к Q4 2025, target $2M+ в 2026
 - **Competitive analysis** с unique value propositions для каждой идеи
 - **ROI-based prioritization** с учетом user value, technical feasibility, resources
 
 ### Результаты анализа:
-- **Топ приоритеты Q1 2025**: Voice-Activated Assistant, HealthKit Integration, Productivity Genome
+- **Топ приоритеты Q1 2025**: Voice-Activated Assistant, Apple HealthKit Integration, Personal Productivity Genome
 - **Рыночные возможности**: Corporate Wellness ($50M+ market), API-as-a-Service ($10M+ market)
 - **Технические возможности**: Existing Go/React stack готов для ML integration и enterprise features
 - **Competitive advantages**: Integrated calendar-goal approach, real-time sync, SMART validation engine
